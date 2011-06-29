@@ -9,10 +9,10 @@ namespace SqlMigrator
 	{
 		public static int Main(string[] args)
 		{
-			var conn = new SqlConnection("");
+			var conn = new SqlConnection(@"Data Source=.\SQLEXPRESS;Initial Catalog=Tests;Integrated Security=True");
 			var logTable = new LogTable(conn);
 			var migrationFactory = new MigrationRepository(".", Encoding.UTF8, logTable);
-			IScriptTarget scriptTarget = new DatabaseScriptTarget(conn);
+			IScriptTarget scriptTarget = new FileScriptTarget(@"c:\users\gimmi\temp\out.sql", Encoding.UTF8);
 			var scriptBuilder = new ScriptBuilder(logTable);
 
 			IEnumerable<Migration> migrations = migrationFactory.GetPendingMigrations();
