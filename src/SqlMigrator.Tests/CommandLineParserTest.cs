@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using NUnit.Framework;
@@ -24,6 +23,7 @@ namespace SqlMigrator.Tests
 
 			[System.ComponentModel.Description("IntOpt description")]
 			public int IntOpt;
+
 			public bool BoolOpt;
 			public SwitchOption EnumOpt;
 		}
@@ -96,7 +96,7 @@ namespace SqlMigrator.Tests
 		[Test]
 		public void Should_build_help()
 		{
-			var expected = @"
+			string expected = @"
 /StringOpt  StringOpt description
 /IntOpt     IntOpt description
 /BoolOpt    
@@ -105,7 +105,7 @@ namespace SqlMigrator.Tests
 
 			var sb = new StringBuilder();
 			_target.PrintHelp(new StringWriter(sb));
-			var actual = sb.ToString();
+			string actual = sb.ToString();
 
 			actual.Should().Be.EqualTo(expected);
 		}

@@ -1,32 +1,70 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Text;
 
 namespace SqlMigrator
 {
+	public enum Action
+	{
+		Up,
+		Down,
+		Init
+	}
+
+	public class Options
+	{
+		public string ConnStr = @"Data Source=.\SQLEXPRESS;Initial Catalog=Tests;Integrated Security=True";
+		public string MigrationsDir = Path.Combine(Environment.CurrentDirectory, "Migrations");
+		public Action Action = Action.Up;
+		public string OutputScript;
+		public Encoding TextEncoding = Encoding.UTF8;
+	}
+
 	public class Program
 	{
+		private static readonly CommandLineParser<Options> CommandLineParser = new CommandLineParser<Options>();
+
 		public static int Main(string[] args)
 		{
-			var conn = new SqlConnection(@"Data Source=.\SQLEXPRESS;Initial Catalog=Tests;Integrated Security=True");
-			var logTable = new LogTable(conn);
-			var migrationFactory = new MigrationRepository(".", Encoding.UTF8, logTable);
-			IScriptTarget scriptTarget = new FileScriptTarget(@"c:\users\gimmi\temp\out.sql", Encoding.UTF8);
-			var scriptBuilder = new ScriptBuilder(logTable);
-
-			IEnumerable<Migration> migrations = migrationFactory.GetPendingMigrations();
-			string script = scriptBuilder.BuildUp(migrations);
 			try
 			{
+				Options opts = CommandLineParser.Parse(args, new Options());
+				IDbConnection conn = new SqlConnection(opts.ConnStr);
+				var logTable = new LogTable(conn);
+				var scriptBuilder = new ScriptBuilder(logTable);
+				var migrationRepository = new MigrationRepository(opts.MigrationsDir, opts.TextEncoding, logTable);
+
+				IScriptTarget scriptTarget;
+				if(string.IsNullOrWhiteSpace(opts.OutputScript))
+				{
+					scriptTarget = new DatabaseScriptTarget(conn);
+				}
+				else
+				{
+					scriptTarget = new FileScriptTarget(opts.OutputScript, opts.TextEncoding);
+				}
+
+				string script = null;
+				if(opts.Action == Action.Up)
+				{
+					script = scriptBuilder.BuildUp(migrationRepository.GetPendingMigrations());
+				}
+				else if(opts.Action == Action.Down)
+				{
+					int to = 0;
+					script = scriptBuilder.BuildDown(migrationRepository.GetApplyedMigrations(to, long.MaxValue));
+				}
+
 				scriptTarget.Execute(script);
+				return 0;
 			}
 			catch(Exception e)
 			{
 				Console.WriteLine(e);
 				return 1;
 			}
-			return 0;
 		}
 	}
 }

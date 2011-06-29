@@ -20,39 +20,69 @@ namespace SqlMigrator
 			_logTable = logTable;
 		}
 
-		private bool IsValidMigration(string file)
+		public IEnumerable<Migration> GetPendingMigrations()
 		{
-			var fileInfo = new FileInfo(file);
-			Match match = Regex.Match(fileInfo.Name, @"^(\d+)");
-			return fileInfo.Exists
-			       && fileInfo.Extension.Equals("sql", StringComparison.InvariantCultureIgnoreCase)
-			       && match.Success;
+			return GetAll().Values.Where(_logTable.IsMigrationPending);
 		}
 
-		private Migration Create(string file)
+		public IEnumerable<Migration> GetApplyedMigrations(long fromId, long toId)
 		{
-			var fileInfo = new FileInfo(file);
+			var ret = new List<Migration>();
+			IDictionary<long, Migration> migrations = GetAll();
+			foreach(long id in _logTable.GetApplyedMigrations(fromId, toId))
+			{
+				if(!migrations.ContainsKey(id))
+				{
+					throw new Exception(string.Format("Migration #{0} has been applyed to database, but not found in migrations directory", id));
+				}
+				ret.Add(migrations[id]);
+			}
+			return ret;
+		}
+
+		private long? GetMigrationIdFromFileName(FileInfo fileInfo)
+		{
 			Match match = Regex.Match(fileInfo.Name, @"^(\d+)");
-			string[] upDown = SplitScript(File.ReadAllText(file, _encoding));
-			return new Migration(Int64.Parse(match.Groups[0].Value), upDown[0], upDown[1]);
+			bool isValidMigrationFile = fileInfo.Exists
+			                            && fileInfo.Extension.Equals("sql", StringComparison.InvariantCultureIgnoreCase)
+			                            && match.Success;
+			if(isValidMigrationFile)
+			{
+				return Int64.Parse(match.Groups[0].Value);
+			}
+			return null;
+		}
+
+		private IDictionary<long, Migration> GetAll()
+		{
+			var ret = new Dictionary<long, Migration>();
+			IEnumerable<FileInfo> files = Directory.GetFiles(_migrationsPath).Select(n => new FileInfo(n));
+			foreach(Migration migration in files.Where(f => GetMigrationIdFromFileName(f).HasValue).Select(Create))
+			{
+				if(ret.ContainsKey(migration.Id))
+				{
+					throw new Exception(string.Format("Found more than one migration with id #{0}", migration.Id));
+				}
+				ret.Add(migration.Id, migration);
+			}
+			return ret;
+		}
+
+		private Migration Create(FileInfo file)
+		{
+			string[] upDown = SplitScript(File.ReadAllText(file.FullName, _encoding));
+			var id = GetMigrationIdFromFileName(file).Value;
+			return new Migration(id, upDown[0], upDown[1]);
 		}
 
 		private string[] SplitScript(string script)
 		{
-			var match = Regex.Match(script, @"^\s*--\s*@DOWN\s*$", RegexOptions.IgnoreCase);
+			Match match = Regex.Match(script, @"^\s*--\s*@DOWN\s*$", RegexOptions.IgnoreCase);
 			if(match.Success)
 			{
 				return new[] { script.Substring(0, match.Index), script.Substring(match.Index + match.Length) };
 			}
 			return new[] { script, "" };
-		}
-
-		public IEnumerable<Migration> GetPendingMigrations()
-		{
-			return Directory.GetFiles(_migrationsPath)
-				.Where(IsValidMigration)
-				.Select(Create)
-				.Where(_logTable.IsMigrationPending);
 		}
 	}
 }

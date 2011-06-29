@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 
 namespace SqlMigrator
 {
@@ -16,6 +17,21 @@ namespace SqlMigrator
 			IDbCommand cmd = _conn.CreateCommand();
 			cmd.CommandText = string.Format("SELECT COUNT(*) FROM Migrations WHERE Id = {0}", migration.Id);
 			return (int)cmd.ExecuteScalar() < 1;
+		}
+
+		public IEnumerable<long> GetApplyedMigrations(long fromId, long toId)
+		{
+			IDbCommand cmd = _conn.CreateCommand();
+			cmd.CommandText = string.Format("SELECT Id FROM Migrations WHERE Id BETWEEN {0} AND {1}", fromId, toId);
+			var ret = new List<long>();
+			using(var rdr = cmd.ExecuteReader())
+			{
+				while(rdr.Read())
+				{
+					ret.Add((long)rdr[0]);
+				}
+			}
+			return ret;
 		}
 
 		public string BuildDeleteScript(Migration migration)
