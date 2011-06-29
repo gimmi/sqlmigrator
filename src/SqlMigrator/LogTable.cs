@@ -3,7 +3,7 @@ using System.Data;
 
 namespace SqlMigrator
 {
-	public class LogTable
+	public class LogTable : ILogTable
 	{
 		private readonly IDbConnection _conn;
 

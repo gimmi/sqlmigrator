@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="CommandLineParser.cs" />
     <Compile Include="FileScriptTarget.cs" />
+    <Compile Include="ILogTable.cs" />
     <Compile Include="IScriptTarget.cs" />
     <Compile Include="LogTable.cs" />
     <Compile Include="DatabaseScriptTarget.cs" />

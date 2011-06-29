@@ -11,9 +11,9 @@ namespace SqlMigrator
 	{
 		private readonly string _migrationsPath;
 		private readonly Encoding _encoding;
-		private readonly LogTable _logTable;
+		private readonly ILogTable _logTable;
 
-		public MigrationRepository(string migrationsPath, Encoding encoding, LogTable logTable)
+		public MigrationRepository(string migrationsPath, Encoding encoding, ILogTable logTable)
 		{
 			_migrationsPath = migrationsPath;
 			_encoding = encoding;
@@ -33,7 +33,7 @@ namespace SqlMigrator
 			{
 				if(!migrations.ContainsKey(id))
 				{
-					throw new Exception(string.Format("Migration #{0} has been applyed to database, but not found in migrations directory", id));
+					throw new ApplicationException(string.Format("Migration #{0} has been applyed to database, but not found in migrations directory", id));
 				}
 				ret.Add(migrations[id]);
 			}
@@ -44,7 +44,7 @@ namespace SqlMigrator
 		{
 			Match match = Regex.Match(fileInfo.Name, @"^(\d+)");
 			bool isValidMigrationFile = fileInfo.Exists
-			                            && fileInfo.Extension.Equals("sql", StringComparison.InvariantCultureIgnoreCase)
+			                            && fileInfo.Extension.Equals(".sql", StringComparison.InvariantCultureIgnoreCase)
 			                            && match.Success;
 			if(isValidMigrationFile)
 			{
@@ -53,7 +53,7 @@ namespace SqlMigrator
 			return null;
 		}
 
-		private IDictionary<long, Migration> GetAll()
+		internal IDictionary<long, Migration> GetAll()
 		{
 			var ret = new Dictionary<long, Migration>();
 			IEnumerable<FileInfo> files = Directory.GetFiles(_migrationsPath).Select(n => new FileInfo(n));
@@ -61,7 +61,7 @@ namespace SqlMigrator
 			{
 				if(ret.ContainsKey(migration.Id))
 				{
-					throw new Exception(string.Format("Found more than one migration with id #{0}", migration.Id));
+					throw new ApplicationException(string.Format("Found more than one migration with id #{0}", migration.Id));
 				}
 				ret.Add(migration.Id, migration);
 			}
@@ -77,7 +77,9 @@ namespace SqlMigrator
 
 		private string[] SplitScript(string script)
 		{
-			Match match = Regex.Match(script, @"^\s*--\s*@DOWN\s*$", RegexOptions.IgnoreCase);
+			script = script.Trim();
+
+			Match match = Regex.Match(script, @"^\s*--\s*@DOWN\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
 			if(match.Success)
 			{
 				return new[] { script.Substring(0, match.Index), script.Substring(match.Index + match.Length) };
