@@ -1,17 +1,34 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace SqlMigrator
 {
-	public class CommandlineParser
+	public class CommandLineParser
 	{
+		public class Option
+		{
+			public string Name;
+			public string Description;
+			public Type Type;
+		}
 		private readonly string[] _args;
+		private readonly IEnumerable<Option> _options;
 
-		public CommandlineParser(string[] args)
+		public CommandLineParser(string[] args, IEnumerable<Option> options)
 		{
 			_args = args;
+			_options = options;
+		}
+
+		public void PrintHelp(TextWriter writer)
+		{
+			foreach (var opt in _options)
+			{
+				writer.Write("-{0} {1}\t{2}", opt.Name, opt.Type.Name, opt.Description);
+			}
 		}
 
 		public bool GetFlag(string[] names)
@@ -22,7 +39,7 @@ namespace SqlMigrator
 		public T GetParam<T>(string[] names, T def)
 		{
 			var param = GetParam(names);
-			if(param == null)
+			if (param == null)
 			{
 				return def;
 			}
@@ -32,7 +49,7 @@ namespace SqlMigrator
 		public T GetParam<T>(string[] names)
 		{
 			var param = GetParam(names);
-			if(param == null)
+			if (param == null)
 			{
 				throw new CommandlineException("Missing required option '{0}'", String.Join(", ", names));
 			}
@@ -42,11 +59,11 @@ namespace SqlMigrator
 		private string GetParam(string[] names)
 		{
 			var en = SeekParam(names);
-			if(en == null)
+			if (en == null)
 			{
 				return null;
 			}
-			if(!en.MoveNext())
+			if (!en.MoveNext())
 			{
 				throw new CommandlineException("No value for option '{0}'", String.Join(", ", names));
 			}
