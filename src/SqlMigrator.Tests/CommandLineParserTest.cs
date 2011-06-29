@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using NUnit.Framework;
@@ -49,13 +50,13 @@ namespace SqlMigrator.Tests
 		[Test]
 		public void Should_fail_when_no_option_name_provided()
 		{
-			Executing.This(() => _target.ParseArgs(new[] { "/p1", "v1", "v2" })).Should().Throw<CommandlineException>().And.ValueOf.Message.Should().Be.EqualTo("Expected option name, found 'v2'");
+			Executing.This(() => _target.ParseArgs(new[] { "/p1", "v1", "v2" })).Should().Throw<ApplicationException>().And.ValueOf.Message.Should().Be.EqualTo("Expected option name, found 'v2'");
 		}
 
 		[Test]
 		public void Should_fail_when_option_without_value_provided()
 		{
-			Executing.This(() => _target.ParseArgs(new[] { "/p1", "v1", "/p2" })).Should().Throw<CommandlineException>().And.ValueOf.Message.Should().Be.EqualTo("No value for option 'p2'");
+			Executing.This(() => _target.ParseArgs(new[] { "/p1", "v1", "/p2" })).Should().Throw<ApplicationException>().And.ValueOf.Message.Should().Be.EqualTo("No value for option 'p2'");
 		}
 
 		[Test]
@@ -77,7 +78,7 @@ namespace SqlMigrator.Tests
 		[Test]
 		public void Should_fail_with_unknown_option()
 		{
-			Executing.This(() => _target.Parse(new[] { "/unknown", "value" })).Should().Throw<CommandlineException>().And.ValueOf.Message.Should().Be.EqualTo("Unknown or ambiguous option 'unknown'");
+			Executing.This(() => _target.Parse(new[] { "/unknown", "value" })).Should().Throw<ApplicationException>().And.ValueOf.Message.Should().Be.EqualTo("Unknown or ambiguous option 'unknown'");
 		}
 
 		[Test]
@@ -90,7 +91,7 @@ namespace SqlMigrator.Tests
 		[Test]
 		public void Should_fail_when_value_cannot_be_converted_to_target_type()
 		{
-			Executing.This(() => _target.Parse(new[] { "/intopt", "nan" })).Should().Throw<CommandlineException>().And.ValueOf.Message.Should().Be.EqualTo("Cannot convert value 'nan' for option 'intopt' to 'System.Int32'");
+			Executing.This(() => _target.Parse(new[] { "/intopt", "nan" })).Should().Throw<ApplicationException>().And.ValueOf.Message.Should().Be.EqualTo("Cannot convert value 'nan' for option 'intopt' to 'System.Int32'");
 		}
 
 		[Test]

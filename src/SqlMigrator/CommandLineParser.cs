@@ -18,7 +18,7 @@ namespace SqlMigrator
 				FieldInfo[] fieldInfos = GetFields().Where(f => f.Name.Equals(arg.Key, StringComparison.InvariantCultureIgnoreCase)).ToArray();
 				if(fieldInfos.Length != 1)
 				{
-					throw new CommandlineException("Unknown or ambiguous option '{0}'", arg.Key);
+					throw new ApplicationException(string.Format("Unknown or ambiguous option '{0}'", arg.Key));
 				}
 				FieldInfo fieldInfo = fieldInfos[0];
 				Type fieldType = fieldInfo.FieldType;
@@ -29,7 +29,7 @@ namespace SqlMigrator
 				}
 				catch(Exception e)
 				{
-					throw new CommandlineException(string.Format("Cannot convert value '{0}' for option '{1}' to '{2}'", arg.Value, arg.Key, fieldType), e);
+					throw new ApplicationException(string.Format("Cannot convert value '{0}' for option '{1}' to '{2}'", arg.Value, arg.Key, fieldType), e);
 				}
 				fieldInfo.SetValue(instance, value);
 			}
@@ -50,12 +50,12 @@ namespace SqlMigrator
 				Match match = new Regex(@"^/(?<name>.+)$").Match(enumerator.Current);
 				if(!match.Success)
 				{
-					throw new CommandlineException("Expected option name, found '{0}'", enumerator.Current);
+					throw new ApplicationException(string.Format("Expected option name, found '{0}'", enumerator.Current));
 				}
 				string name = match.Groups["name"].Value;
 				if(!enumerator.MoveNext())
 				{
-					throw new CommandlineException("No value for option '{0}'", name);
+					throw new ApplicationException(string.Format("No value for option '{0}'", name));
 				}
 				ret.Add(name, enumerator.Current);
 			}
