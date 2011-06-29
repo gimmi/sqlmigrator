@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
@@ -15,10 +16,19 @@ namespace SqlMigrator
 
 	public class Options
 	{
-		public string ConnStr = @"Data Source=.\SQLEXPRESS;Initial Catalog=Tests;Integrated Security=True";
+		[Description(@"Required. Database connection string e.g. 'Data Source=.\SQLEXPRESS;Initial Catalog=Tests;Integrated Security=True'")]
+		public string ConnStr;
+
+		[Description(@"Required. Path of the directory containing migration files e.g. '.\Migrations'")]
 		public string MigrationsDir = Path.Combine(Environment.CurrentDirectory, "Migrations");
+
+		[Description(@"Required. Te action to execute: Up, Down")]
 		public Action Action = Action.Up;
+
+		[Description(@"If specified, script will be written to this file instead of executed against DB")]
 		public string OutputScript;
+
+		[Description(@"Encoding for migration files, default to UTF8")]
 		public Encoding TextEncoding = Encoding.UTF8;
 	}
 
@@ -28,6 +38,12 @@ namespace SqlMigrator
 
 		public static int Main(string[] args)
 		{
+			Console.WriteLine("SqlMigrator {0}", typeof(Program).Assembly.GetName().Version);
+			if(args.Length == 0)
+			{
+				CommandLineParser.PrintHelp(Console.Out);
+				return 0;
+			}
 			try
 			{
 				Options opts = CommandLineParser.Parse(args);
