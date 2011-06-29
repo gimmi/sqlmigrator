@@ -6,9 +6,9 @@ namespace SqlMigrator
 {
 	public class ScriptBuilder
 	{
-		private readonly LogTable _logTable;
+		private readonly ILogTable _logTable;
 
-		public ScriptBuilder(LogTable logTable)
+		public ScriptBuilder(ILogTable logTable)
 		{
 			_logTable = logTable;
 		}
@@ -19,8 +19,8 @@ namespace SqlMigrator
 			foreach(Migration migration in migrations.OrderBy(m => m.Id))
 			{
 				ret.AppendFormat("-- Migration {0}", migration).AppendLine()
-					.AppendLine(migration.Up).AppendLine()
-					.Append(_logTable.BuildInsertScript(migration)).AppendLine();
+					.AppendLine(migration.Up)
+					.AppendLine(_logTable.BuildInsertScript(migration));
 			}
 			return ret.ToString();
 		}
@@ -31,8 +31,8 @@ namespace SqlMigrator
 			foreach (Migration migration in migrations.OrderByDescending(m => m.Id))
 			{
 				ret.AppendFormat("-- Migration {0}", migration).AppendLine()
-					.AppendLine(migration.Down).AppendLine()
-					.Append(_logTable.BuildDeleteScript(migration)).AppendLine();
+					.AppendLine(migration.Down)
+					.AppendLine(_logTable.BuildDeleteScript(migration));
 			}
 			return ret.ToString();
 		}
