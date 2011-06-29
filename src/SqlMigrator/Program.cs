@@ -30,7 +30,7 @@ namespace SqlMigrator
 		{
 			try
 			{
-				Options opts = CommandLineParser.Parse(args, new Options());
+				Options opts = CommandLineParser.Parse(args);
 				IDbConnection conn = new SqlConnection(opts.ConnStr);
 				var logTable = new LogTable(conn);
 				var scriptBuilder = new ScriptBuilder(logTable);

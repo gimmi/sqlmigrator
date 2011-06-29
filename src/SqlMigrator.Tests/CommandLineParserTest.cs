@@ -61,7 +61,7 @@ namespace SqlMigrator.Tests
 		[Test]
 		public void Should_fill_option_object()
 		{
-			Options instance = _target.Parse(new[] { "/stringopt", "a string", "/IntOpt", "123", "/BOOLOPT", "true" }, new Options());
+			Options instance = _target.Parse(new[] { "/stringopt", "a string", "/IntOpt", "123", "/BOOLOPT", "true" });
 			instance.StringOpt.Should().Be.EqualTo("a string");
 			instance.IntOpt.Should().Be.EqualTo(123);
 			instance.BoolOpt.Should().Be.EqualTo(true);
@@ -70,27 +70,27 @@ namespace SqlMigrator.Tests
 		[Test]
 		public void Should_leave_default_value_when_no_option_provided()
 		{
-			Options instance = _target.Parse(new string[0], new Options());
+			Options instance = _target.Parse(new string[0]);
 			instance.StringOpt.Should().Be.EqualTo("default value");
 		}
 
 		[Test]
 		public void Should_fail_with_unknown_option()
 		{
-			Executing.This(() => _target.Parse(new[] { "/unknown", "value" }, new Options())).Should().Throw<CommandlineException>().And.ValueOf.Message.Should().Be.EqualTo("Unknown or ambiguous option 'unknown'");
+			Executing.This(() => _target.Parse(new[] { "/unknown", "value" })).Should().Throw<CommandlineException>().And.ValueOf.Message.Should().Be.EqualTo("Unknown or ambiguous option 'unknown'");
 		}
 
 		[Test]
 		public void Should_support_enums()
 		{
-			Options instance = _target.Parse(new[] { "/enumopt", "Value1" }, new Options());
+			Options instance = _target.Parse(new[] { "/enumopt", "Value1" });
 			instance.EnumOpt.Should().Be.EqualTo(SwitchOption.Value1);
 		}
 
 		[Test]
 		public void Should_fail_when_value_cannot_be_converted_to_target_type()
 		{
-			Executing.This(() => _target.Parse(new[] { "/intopt", "nan" }, new Options())).Should().Throw<CommandlineException>().And.ValueOf.Message.Should().Be.EqualTo("Cannot convert value 'nan' for option 'intopt' to 'System.Int32'");
+			Executing.This(() => _target.Parse(new[] { "/intopt", "nan" })).Should().Throw<CommandlineException>().And.ValueOf.Message.Should().Be.EqualTo("Cannot convert value 'nan' for option 'intopt' to 'System.Int32'");
 		}
 
 		[Test]

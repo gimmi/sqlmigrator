@@ -10,8 +10,9 @@ namespace SqlMigrator
 {
 	public class CommandLineParser<T>
 	{
-		public T Parse(string[] args, T instance)
+		public T Parse(string[] args)
 		{
+			var instance = Activator.CreateInstance<T>();
 			foreach(var arg in ParseArgs(args))
 			{
 				FieldInfo[] fieldInfos = GetFields().Where(f => f.Name.Equals(arg.Key, StringComparison.InvariantCultureIgnoreCase)).ToArray();
