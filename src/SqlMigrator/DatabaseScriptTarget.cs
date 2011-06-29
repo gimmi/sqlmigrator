@@ -20,6 +20,7 @@ namespace SqlMigrator
 				try
 				{
 					IDbCommand cmd = _conn.CreateCommand();
+					cmd.Transaction = tran;
 					cmd.CommandText = script;
 					cmd.ExecuteNonQuery();
 					tran.Commit();

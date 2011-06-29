@@ -14,24 +14,40 @@ namespace SqlMigrator
 
 		public bool IsMigrationPending(Migration migration)
 		{
-			IDbCommand cmd = _conn.CreateCommand();
-			cmd.CommandText = string.Format("SELECT COUNT(*) FROM Migrations WHERE Id = {0}", migration.Id);
-			return (int)cmd.ExecuteScalar() < 1;
+			_conn.Open();
+			try
+			{
+				IDbCommand cmd = _conn.CreateCommand();
+				cmd.CommandText = string.Format("SELECT COUNT(*) FROM Migrations WHERE Id = {0}", migration.Id);
+				return (int)cmd.ExecuteScalar() < 1;
+			}
+			finally
+			{
+				_conn.Close();
+			}
 		}
 
 		public IEnumerable<long> GetApplyedMigrations(long fromId, long toId)
 		{
-			IDbCommand cmd = _conn.CreateCommand();
-			cmd.CommandText = string.Format("SELECT Id FROM Migrations WHERE Id BETWEEN {0} AND {1}", fromId, toId);
-			var ret = new List<long>();
-			using(var rdr = cmd.ExecuteReader())
+			_conn.Open();
+			try
 			{
-				while(rdr.Read())
+				IDbCommand cmd = _conn.CreateCommand();
+				cmd.CommandText = string.Format("SELECT Id FROM Migrations WHERE Id BETWEEN {0} AND {1}", fromId, toId);
+				var ret = new List<long>();
+				using(IDataReader rdr = cmd.ExecuteReader())
 				{
-					ret.Add((long)rdr[0]);
+					while(rdr.Read())
+					{
+						ret.Add((long)rdr[0]);
+					}
 				}
+				return ret;
 			}
-			return ret;
+			finally
+			{
+				_conn.Close();
+			}
 		}
 
 		public string BuildDeleteScript(Migration migration)
