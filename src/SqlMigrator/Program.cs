@@ -22,7 +22,7 @@ namespace SqlMigrator
 		[Description(@"Required. Path of the directory containing migration files e.g. '.\Migrations'")]
 		public string MigrationsDir = Path.Combine(Environment.CurrentDirectory, "Migrations");
 
-		[Description(@"Required. Te action to execute: Up, Down")]
+		[Description(@"Required. Te action to execute: Up, Down, Init")]
 		public Action Action = Action.Up;
 
 		[Description(@"If specified, script will be written to this file instead of executed against DB")]
@@ -52,16 +52,6 @@ namespace SqlMigrator
 				var scriptBuilder = new ScriptBuilder(logTable);
 				var migrationRepository = new MigrationRepository(opts.MigrationsDir, opts.TextEncoding, logTable);
 
-				IScriptTarget scriptTarget;
-				if(string.IsNullOrWhiteSpace(opts.OutputScript))
-				{
-					scriptTarget = new DatabaseScriptTarget(conn);
-				}
-				else
-				{
-					scriptTarget = new FileScriptTarget(opts.OutputScript, opts.TextEncoding);
-				}
-
 				string script = null;
 				if(opts.Action == Action.Up)
 				{
@@ -72,7 +62,20 @@ namespace SqlMigrator
 					int to = 0;
 					script = scriptBuilder.BuildDown(migrationRepository.GetApplyedMigrations(to, long.MaxValue));
 				}
+				else if(opts.Action == Action.Init)
+				{
+					script = logTable.BuildCreateScript();
+				}
 
+				IScriptTarget scriptTarget;
+				if (string.IsNullOrWhiteSpace(opts.OutputScript))
+				{
+					scriptTarget = new DatabaseScriptTarget(conn);
+				}
+				else
+				{
+					scriptTarget = new FileScriptTarget(opts.OutputScript, opts.TextEncoding);
+				}
 				scriptTarget.Execute(script);
 				return 0;
 			}
