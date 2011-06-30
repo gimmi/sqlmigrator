@@ -38,14 +38,15 @@ namespace SqlMigrator
 
 		public static int Main(string[] args)
 		{
-			Console.WriteLine("SqlMigrator {0}", typeof(Program).Assembly.GetName().Version);
-			if(args.Length == 0)
-			{
-				CommandLineParser.PrintHelp(Console.Out);
-				return 0;
-			}
 			try
 			{
+				Console.WriteLine("SqlMigrator {0}", typeof(Program).Assembly.GetName().Version);
+				if (args.Length == 0)
+				{
+					Console.WriteLine("Command line parameters:");
+					CommandLineParser.PrintHelp(Console.Out);
+					return 0;
+				}
 				Options opts = CommandLineParser.Parse(args);
 				IDbConnection conn = new SqlConnection(opts.ConnStr);
 				var logTable = new LogTable(conn);
