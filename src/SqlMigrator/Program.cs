@@ -19,14 +19,14 @@ namespace SqlMigrator
 		[Description(@"Required. Database connection string e.g. 'Data Source=.\SQLEXPRESS;Initial Catalog=Tests;Integrated Security=True'")]
 		public string ConnStr;
 
-		[Description(@"Required. Path of the directory containing migration files e.g. '.\Migrations'")]
+		[Description(@"Path of the directory containing migration files. Default to '.\Migrations'")]
 		public string MigrationsDir = Path.Combine(Environment.CurrentDirectory, "Migrations");
 
-		[Description(@"Required. Te action to execute: Up, Down, Init")]
+		[Description(@"Te action to execute. Available actions are 'Up', 'Down' and 'Init'. Default to 'Up'")]
 		public Action Action = Action.Up;
 
 		[Description(@"If specified, script will be written to this file instead of executed against DB")]
-		public string OutputScript;
+		public string OutputFile;
 
 		[Description(@"Encoding for migration files, default to UTF8")]
 		public Encoding TextEncoding = Encoding.UTF8;
@@ -68,13 +68,13 @@ namespace SqlMigrator
 				}
 
 				IScriptTarget scriptTarget;
-				if (string.IsNullOrWhiteSpace(opts.OutputScript))
+				if(string.IsNullOrWhiteSpace(opts.OutputFile))
 				{
 					scriptTarget = new DatabaseScriptTarget(conn);
 				}
 				else
 				{
-					scriptTarget = new FileScriptTarget(opts.OutputScript, opts.TextEncoding);
+					scriptTarget = new FileScriptTarget(opts.OutputFile, opts.TextEncoding);
 				}
 				scriptTarget.Execute(script);
 				return 0;
