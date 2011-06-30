@@ -79,9 +79,9 @@ namespace SqlMigrator.Tests
 		[Test]
 		public void Shuld_fail_when_an_applyed_migration_is_not_available()
 		{
-			_logTable.Stub(x => x.GetApplyedMigrations(-10, 10)).Return(new long[]{1});
+			_logTable.Stub(x => x.GetApplyedMigrations()).Return(new long[]{1});
 
-			Executing.This(() => _target.GetApplyedMigrations(-10, 10)).Should().Throw<ApplicationException>().And.ValueOf.Message.Should().Be.EqualTo("Migration #1 has been applyed to database, but not found in migrations directory");
+			Executing.This(() => _target.GetApplyedMigrations()).Should().Throw<ApplicationException>().And.ValueOf.Message.Should().Be.EqualTo("Migration #1 has been applyed to database, but not found in migrations directory");
 		}
 	}
 }

@@ -25,11 +25,11 @@ namespace SqlMigrator
 			return GetAll().Values.Where(_logTable.IsMigrationPending);
 		}
 
-		public IEnumerable<Migration> GetApplyedMigrations(long fromId, long toId)
+		public IEnumerable<Migration> GetApplyedMigrations()
 		{
 			var ret = new List<Migration>();
 			IDictionary<long, Migration> migrations = GetAll();
-			foreach(long id in _logTable.GetApplyedMigrations(fromId, toId))
+			foreach(long id in _logTable.GetApplyedMigrations())
 			{
 				if(!migrations.ContainsKey(id))
 				{

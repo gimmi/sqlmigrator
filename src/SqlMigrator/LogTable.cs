@@ -27,13 +27,13 @@ namespace SqlMigrator
 			}
 		}
 
-		public IEnumerable<long> GetApplyedMigrations(long fromId, long toId)
+		public IEnumerable<long> GetApplyedMigrations()
 		{
 			_conn.Open();
 			try
 			{
 				IDbCommand cmd = _conn.CreateCommand();
-				cmd.CommandText = string.Format("SELECT Id FROM Migrations WHERE Id BETWEEN {0} AND {1}", fromId, toId);
+				cmd.CommandText = "SELECT Id FROM Migrations";
 				var ret = new List<long>();
 				using(IDataReader rdr = cmd.ExecuteReader())
 				{

@@ -59,8 +59,7 @@ namespace SqlMigrator
 				}
 				else if(opts.Action == Action.Down)
 				{
-					int to = 0;
-					script = scriptBuilder.BuildDown(migrationRepository.GetApplyedMigrations(to, long.MaxValue));
+					script = scriptBuilder.BuildDown(migrationRepository.GetApplyedMigrations());
 				}
 				else if(opts.Action == Action.Init)
 				{

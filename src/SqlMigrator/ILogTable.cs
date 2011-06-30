@@ -5,7 +5,7 @@ namespace SqlMigrator
 	public interface ILogTable
 	{
 		bool IsMigrationPending(Migration migration);
-		IEnumerable<long> GetApplyedMigrations(long fromId, long toId);
+		IEnumerable<long> GetApplyedMigrations();
 		string BuildDeleteScript(Migration migration);
 		string BuildInsertScript(Migration migration);
 		string BuildCreateScript();
