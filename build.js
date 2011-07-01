@@ -22,14 +22,14 @@ task('assemblyinfo', 'version', function () {
 	dotnet.writeAssemblyInfo('src/SharedAssemblyInfo.cs', {
 		AssemblyTitle: 'SqlMigrator',
 		AssemblyProduct: 'SqlMigrator',
-		AssemblyDescription: 'SQL Database migration script handler',
+		AssemblyDescription: 'http://gimmi.github.com/sqlmigrator/',
 		AssemblyCopyright: 'Copyright © Gian Marco Gherardi ' + new Date().getFullYear(),
 		AssemblyTrademark: '',
 		AssemblyCompany: 'Gian Marco Gherardi',
 		AssemblyConfiguration: '', // Probably a good place to put Git SHA1 and build date
 		AssemblyVersion: [ version.major, version.minor, version.patch, 0 ].join('.'),
 		AssemblyFileVersion: [ version.major, version.minor, version.patch, 0 ].join('.'),
-		AssemblyInformationalVersion: [ version.major, version.minor, version.patch, 0 ].join('.')
+		AssemblyInformationalVersion: [ version.major, version.minor, version.patch ].join('.')
 	});
 });
 
