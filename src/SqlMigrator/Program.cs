@@ -31,8 +31,7 @@ namespace SqlMigrator
 			log.WriteLine(typeof(Program).Assembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false).Cast<AssemblyCopyrightAttribute>().Single().Copyright);
 
 			var commandLineParser = new CommandLineParser<Options>();
-			log.WriteLine("SqlMigrator {0}", typeof(Program).Assembly.GetName().Version);
-			if(args.Length == 0)
+			if (args.Length == 0)
 			{
 				log.WriteLine("Command line parameters:");
 				commandLineParser.PrintHelp(log);
