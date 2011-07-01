@@ -69,6 +69,17 @@ namespace SqlMigrator.Tests
 			Program.Main(new[] { "/action", "down", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
 			TableExists("Masters").Should().Be.False();
 			TableExists("Details").Should().Be.False();
+
+			Program.Main(new[] { "/action", "up", "/count", "1", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
+			TableExists("Masters").Should().Be.True();
+			TableExists("Details").Should().Be.False();
+
+			Program.Main(new[] { "/action", "up", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
+			TableExists("Details").Should().Be.True();
+
+			Program.Main(new[] { "/action", "down", "/count", "1", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
+			TableExists("Masters").Should().Be.True();
+			TableExists("Details").Should().Be.False();
 		}
 	}
 }
