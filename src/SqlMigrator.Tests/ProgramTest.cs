@@ -49,16 +49,18 @@ namespace SqlMigrator.Tests
 			}
 		}
 
-		[TestFixtureTearDown]
-		public void TestFixtureTearDown()
-		{
-		}
-
 		[Test]
 		public void Functional_test()
 		{
+			TableExists("Migrations").Should().Be.False();
 			Program.Main(new[] { "/action", "init", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
 			TableExists("Migrations").Should().Be.True();
+
+			Program.Main(new[] { "/action", "up", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations", "/outputfile", @".\TestScript.sql" }, new StringWriter(new StringBuilder()));
+			TableExists("Masters").Should().Be.False();
+			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE Masters");
+			TableExists("Details").Should().Be.False();
+			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE Details");
 
 			Program.Main(new[] { "/action", "up", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
 			TableExists("Masters").Should().Be.True();
