@@ -21,5 +21,8 @@ namespace SqlMigrator
 
 		[Description(@"Encoding for migration files, default to UTF8")]
 		public Encoding TextEncoding = Encoding.UTF8;
+
+		[Description(@"Number of migrations to consider, default to all available migrations")]
+		public int Count = int.MaxValue;
 	}
 }

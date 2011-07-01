@@ -13,10 +13,10 @@ namespace SqlMigrator
 			_logTable = logTable;
 		}
 
-		public string BuildUp(IEnumerable<Migration> migrations)
+		public string BuildUp(IEnumerable<Migration> migrations, int count)
 		{
 			var ret = new StringBuilder();
-			foreach(Migration migration in migrations.OrderBy(m => m.Id))
+			foreach(Migration migration in migrations.OrderBy(m => m.Id).Take(count))
 			{
 				ret.AppendFormat("-- Migration {0}", migration).AppendLine()
 					.AppendLine(migration.Up)
@@ -25,10 +25,10 @@ namespace SqlMigrator
 			return ret.ToString();
 		}
 
-		public string BuildDown(IEnumerable<Migration> migrations)
+		public string BuildDown(IEnumerable<Migration> migrations, int count)
 		{
 			var ret = new StringBuilder();
-			foreach (Migration migration in migrations.OrderByDescending(m => m.Id))
+			foreach (Migration migration in migrations.OrderByDescending(m => m.Id).Take(count))
 			{
 				ret.AppendFormat("-- Migration {0}", migration).AppendLine()
 					.AppendLine(migration.Down)

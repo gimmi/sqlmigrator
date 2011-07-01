@@ -12,7 +12,7 @@ namespace SqlMigrator
 			{
 				var commandLineParser = new CommandLineParser<Options>();
 				Console.WriteLine("SqlMigrator {0}", typeof(Program).Assembly.GetName().Version);
-				if (args.Length == 0)
+				if(args.Length == 0)
 				{
 					Console.WriteLine("Command line parameters:");
 					commandLineParser.PrintHelp(Console.Out);
@@ -27,11 +27,11 @@ namespace SqlMigrator
 				string script = null;
 				if(opts.Action == Action.Up)
 				{
-					script = scriptBuilder.BuildUp(migrationRepository.GetPendingMigrations());
+					script = scriptBuilder.BuildUp(migrationRepository.GetPendingMigrations(), opts.Count);
 				}
 				else if(opts.Action == Action.Down)
 				{
-					script = scriptBuilder.BuildDown(migrationRepository.GetApplyedMigrations());
+					script = scriptBuilder.BuildDown(migrationRepository.GetApplyedMigrations(), opts.Count);
 				}
 				else if(opts.Action == Action.Init)
 				{
