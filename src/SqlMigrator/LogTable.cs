@@ -62,7 +62,7 @@ namespace SqlMigrator
 
 		public string BuildCreateScript()
 		{
-			return @"CREATE TABLE Migrations(Id BIGINT PRIMARY KEY NOT NULL)";
+			return @"CREATE TABLE Migrations([Id] BIGINT PRIMARY KEY NOT NULL, [Date] DATETIME NOT NULL DEFAULT GETDATE(), [User] NVARCHAR(128) NOT NULL DEFAULT SUSER_NAME(), [Host] NVARCHAR(128) NOT NULL DEFAULT HOST_NAME())";
 		}
 	}
 }
