@@ -44,7 +44,7 @@ task('test', 'build', function () {
 
 task('release', 'test', function () {
 	fs.deletePath('build');
-	dotnet.runMSBuild('src/SqlMigrator.sln', [ 'Clean', 'SqlMigrator:Rebuild' ]);
+	dotnet.runMSBuild('src/SqlMigrator.sln', [ 'Clean', 'SqlMigrator:Rebuild' ], { Configuration: 'Release' });
 	fs.zipPath('build/bin', 'build/sqlmigrator-' + [ version.major, version.minor, version.patch ].join('.') + '.zip');
 	version.patch += 1;
 	fs.writeFile('version.json', JSON.stringify(version));
