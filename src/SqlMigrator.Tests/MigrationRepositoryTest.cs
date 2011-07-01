@@ -40,7 +40,7 @@ namespace SqlMigrator.Tests
 		}
 
 		[Test]
-		public void Shul_load_all_valid_migration_files()
+		public void Shuld_load_all_valid_migration_files()
 		{
 			AddFile("001_First_script.sql", "Up\n -- @Down \nDown");
 			AddFile("002_Second_script.sql");
