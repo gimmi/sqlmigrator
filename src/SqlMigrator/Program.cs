@@ -1,7 +1,10 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 
 namespace SqlMigrator
 {
@@ -23,6 +26,10 @@ namespace SqlMigrator
 
 		public static void Main(string[] args, TextWriter log)
 		{
+			log.WriteLine("{0} {1}", typeof(Program).Assembly.GetCustomAttributes(typeof(AssemblyProductAttribute), false).Cast<AssemblyProductAttribute>().Single().Product, typeof(Program).Assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false).Cast<AssemblyInformationalVersionAttribute>().Single().InformationalVersion);
+			log.WriteLine(typeof(Program).Assembly.GetCustomAttributes(typeof(AssemblyDescriptionAttribute), false).Cast<AssemblyDescriptionAttribute>().Single().Description);
+			log.WriteLine(typeof(Program).Assembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false).Cast<AssemblyCopyrightAttribute>().Single().Copyright);
+
 			var commandLineParser = new CommandLineParser<Options>();
 			log.WriteLine("SqlMigrator {0}", typeof(Program).Assembly.GetName().Version);
 			if(args.Length == 0)
