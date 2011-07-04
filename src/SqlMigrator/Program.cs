@@ -38,8 +38,7 @@ namespace SqlMigrator
 				return;
 			}
 			Options opts = commandLineParser.Parse(args);
-			IDbConnection conn = new SqlConnection(opts.ConnStr);
-			var db = new Database(conn);
+			var db = new MssqlDatabase(opts.ConnStr);
 			var scriptBuilder = new ScriptBuilder(db);
 			var migrationRepository = new MigrationRepository(opts.MigrationsDir, opts.TextEncoding, db);
 

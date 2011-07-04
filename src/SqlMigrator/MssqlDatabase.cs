@@ -1,38 +1,41 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 
 namespace SqlMigrator
 {
-	public class Database : IDatabase
+	public class MssqlDatabase : IDatabase
 	{
-		private readonly IDbConnection _conn;
+		private readonly string _connstr;
 
-		public Database(IDbConnection conn)
+		public MssqlDatabase(string connstr)
 		{
-			_conn = conn;
+			_connstr = connstr;
 		}
 
 		public bool IsMigrationPending(Migration migration)
 		{
-			_conn.Open();
+			var conn = new SqlConnection(_connstr);
+			conn.Open();
 			try
 			{
-				IDbCommand cmd = _conn.CreateCommand();
+				IDbCommand cmd = conn.CreateCommand();
 				cmd.CommandText = string.Format("SELECT COUNT(*) FROM Migrations WHERE Id = {0}", migration.Id);
 				return (int)cmd.ExecuteScalar() < 1;
 			}
 			finally
 			{
-				_conn.Close();
+				conn.Close();
 			}
 		}
 
 		public IEnumerable<long> GetApplyedMigrations()
 		{
-			_conn.Open();
+			var conn = new SqlConnection(_connstr);
+			conn.Open();
 			try
 			{
-				IDbCommand cmd = _conn.CreateCommand();
+				IDbCommand cmd = conn.CreateCommand();
 				cmd.CommandText = "SELECT Id FROM Migrations";
 				var ret = new List<long>();
 				using(IDataReader rdr = cmd.ExecuteReader())
@@ -46,7 +49,7 @@ namespace SqlMigrator
 			}
 			finally
 			{
-				_conn.Close();
+				conn.Close();
 			}
 		}
 
@@ -67,13 +70,14 @@ namespace SqlMigrator
 
 		public void Execute(string script)
 		{
-			_conn.Open();
+			var conn = new SqlConnection(_connstr);
+			conn.Open();
 			try
 			{
-				IDbTransaction tran = _conn.BeginTransaction();
+				IDbTransaction tran = conn.BeginTransaction();
 				try
 				{
-					IDbCommand cmd = _conn.CreateCommand();
+					IDbCommand cmd = conn.CreateCommand();
 					cmd.Transaction = tran;
 					cmd.CommandText = script;
 					cmd.ExecuteNonQuery();
@@ -87,7 +91,7 @@ namespace SqlMigrator
 			}
 			finally
 			{
-				_conn.Close();
+				conn.Close();
 			}
 		}
 	}
