@@ -39,9 +39,9 @@ namespace SqlMigrator
 			}
 			Options opts = commandLineParser.Parse(args);
 			IDbConnection conn = new SqlConnection(opts.ConnStr);
-			var logTable = new LogTable(conn);
-			var scriptBuilder = new ScriptBuilder(logTable);
-			var migrationRepository = new MigrationRepository(opts.MigrationsDir, opts.TextEncoding, logTable);
+			var db = new Database(conn);
+			var scriptBuilder = new ScriptBuilder(db);
+			var migrationRepository = new MigrationRepository(opts.MigrationsDir, opts.TextEncoding, db);
 
 			string script = null;
 			if(opts.Action == Action.Up)
@@ -54,7 +54,7 @@ namespace SqlMigrator
 			}
 			else if(opts.Action == Action.Init)
 			{
-				script = logTable.BuildCreateScript();
+				script = db.BuildCreateScript();
 			}
 
 			IScriptTarget scriptTarget;

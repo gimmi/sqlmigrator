@@ -3,11 +3,11 @@ using System.Data;
 
 namespace SqlMigrator
 {
-	public class LogTable : ILogTable
+	public class Database : IDatabase
 	{
 		private readonly IDbConnection _conn;
 
-		public LogTable(IDbConnection conn)
+		public Database(IDbConnection conn)
 		{
 			_conn = conn;
 		}

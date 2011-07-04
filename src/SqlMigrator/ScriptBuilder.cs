@@ -6,11 +6,11 @@ namespace SqlMigrator
 {
 	public class ScriptBuilder
 	{
-		private readonly ILogTable _logTable;
+		private readonly IDatabase _database;
 
-		public ScriptBuilder(ILogTable logTable)
+		public ScriptBuilder(IDatabase database)
 		{
-			_logTable = logTable;
+			_database = database;
 		}
 
 		public string BuildUp(IEnumerable<Migration> migrations, int count)
@@ -20,7 +20,7 @@ namespace SqlMigrator
 			{
 				ret.AppendFormat("-- Migration {0}", migration).AppendLine()
 					.AppendLine(migration.Up)
-					.AppendLine(_logTable.BuildInsertScript(migration));
+					.AppendLine(_database.BuildInsertScript(migration));
 			}
 			return ret.ToString();
 		}
@@ -32,7 +32,7 @@ namespace SqlMigrator
 			{
 				ret.AppendFormat("-- Migration {0}", migration).AppendLine()
 					.AppendLine(migration.Down)
-					.AppendLine(_logTable.BuildDeleteScript(migration));
+					.AppendLine(_database.BuildDeleteScript(migration));
 			}
 			return ret.ToString();
 		}

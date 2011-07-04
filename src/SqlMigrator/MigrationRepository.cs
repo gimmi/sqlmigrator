@@ -11,25 +11,25 @@ namespace SqlMigrator
 	{
 		private readonly string _migrationsPath;
 		private readonly Encoding _encoding;
-		private readonly ILogTable _logTable;
+		private readonly IDatabase _database;
 
-		public MigrationRepository(string migrationsPath, Encoding encoding, ILogTable logTable)
+		public MigrationRepository(string migrationsPath, Encoding encoding, IDatabase database)
 		{
 			_migrationsPath = migrationsPath;
 			_encoding = encoding;
-			_logTable = logTable;
+			_database = database;
 		}
 
 		public IEnumerable<Migration> GetPendingMigrations()
 		{
-			return GetAll().Values.Where(_logTable.IsMigrationPending);
+			return GetAll().Values.Where(_database.IsMigrationPending);
 		}
 
 		public IEnumerable<Migration> GetApplyedMigrations()
 		{
 			var ret = new List<Migration>();
 			IDictionary<long, Migration> migrations = GetAll();
-			foreach(long id in _logTable.GetApplyedMigrations())
+			foreach(long id in _database.GetApplyedMigrations())
 			{
 				if(!migrations.ContainsKey(id))
 				{
