@@ -45,11 +45,8 @@
     </Compile>
     <Compile Include="Action.cs" />
     <Compile Include="CommandLineParser.cs" />
-    <Compile Include="FileScriptTarget.cs" />
     <Compile Include="IDatabase.cs" />
-    <Compile Include="IScriptTarget.cs" />
     <Compile Include="Database.cs" />
-    <Compile Include="DatabaseScriptTarget.cs" />
     <Compile Include="Migration.cs" />
     <Compile Include="MigrationRepository.cs" />
     <Compile Include="Options.cs" />

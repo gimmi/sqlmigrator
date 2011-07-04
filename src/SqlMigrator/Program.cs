@@ -57,16 +57,14 @@ namespace SqlMigrator
 				script = db.BuildCreateScript();
 			}
 
-			IScriptTarget scriptTarget;
 			if(string.IsNullOrWhiteSpace(opts.OutputFile))
 			{
-				scriptTarget = new DatabaseScriptTarget(conn);
+				db.Execute(script);
 			}
 			else
 			{
-				scriptTarget = new FileScriptTarget(opts.OutputFile, opts.TextEncoding);
+				File.WriteAllText(opts.OutputFile, script, opts.TextEncoding);
 			}
-			scriptTarget.Execute(script);
 		}
 	}
 }

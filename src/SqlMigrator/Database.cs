@@ -64,5 +64,31 @@ namespace SqlMigrator
 		{
 			return @"CREATE TABLE Migrations([Id] BIGINT PRIMARY KEY NOT NULL, [Date] DATETIME NOT NULL DEFAULT GETDATE(), [User] NVARCHAR(128) NOT NULL DEFAULT SUSER_NAME(), [Host] NVARCHAR(128) NOT NULL DEFAULT HOST_NAME())";
 		}
+
+		public void Execute(string script)
+		{
+			_conn.Open();
+			try
+			{
+				IDbTransaction tran = _conn.BeginTransaction();
+				try
+				{
+					IDbCommand cmd = _conn.CreateCommand();
+					cmd.Transaction = tran;
+					cmd.CommandText = script;
+					cmd.ExecuteNonQuery();
+					tran.Commit();
+				}
+				catch
+				{
+					tran.Rollback();
+					throw;
+				}
+			}
+			finally
+			{
+				_conn.Close();
+			}
+		}
 	}
 }
