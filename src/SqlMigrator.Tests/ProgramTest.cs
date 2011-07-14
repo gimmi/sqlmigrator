@@ -52,21 +52,21 @@ namespace SqlMigrator.Tests
 		[Test]
 		public void Functional_test()
 		{
-			TableExists("Migrations").Should().Be.False();
-			Program.Main(new[] { "/action", "init", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
-			TableExists("Migrations").Should().Be.True();
-
 			Program.Main(new[] { "/action", "up", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations", "/outputfile", @".\TestScript.sql" }, new StringWriter(new StringBuilder()));
+			TableExists("Migrations").Should().Be.False();
+			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE Migrations");
 			TableExists("Masters").Should().Be.False();
 			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE Masters");
 			TableExists("Details").Should().Be.False();
 			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE Details");
 
 			Program.Main(new[] { "/action", "up", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
+			TableExists("Migrations").Should().Be.True();
 			TableExists("Masters").Should().Be.True();
 			TableExists("Details").Should().Be.True();
 
 			Program.Main(new[] { "/action", "down", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
+			TableExists("Migrations").Should().Be.True();
 			TableExists("Masters").Should().Be.False();
 			TableExists("Details").Should().Be.False();
 

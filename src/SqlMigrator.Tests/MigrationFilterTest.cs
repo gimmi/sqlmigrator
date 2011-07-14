@@ -23,8 +23,9 @@ namespace SqlMigrator.Tests
 		}
 
 		[Test]
-		public void Should_get_only_pending_migrations()
+		public void Should_get_only_pending_migrations_if_migration_table_exists()
 		{
+			_database.Stub(x => x.MigrationsTableExists()).Return(true);
 			var migration1 = new Migration(1, "up", "dn");
 			var migration2 = new Migration(2, "up", "dn");
 			_repository.Stub(x => x.GetAll()).Return(new Dictionary<long, Migration> {
@@ -40,8 +41,25 @@ namespace SqlMigrator.Tests
 		}
 
 		[Test]
-		public void Shuld_get_applyed_migrations()
+		public void Should_get_all_migrations_if_migration_table_does_not_exists()
 		{
+			_database.Stub(x => x.MigrationsTableExists()).Return(false);
+			var migration1 = new Migration(1, "up", "dn");
+			var migration2 = new Migration(2, "up", "dn");
+			_repository.Stub(x => x.GetAll()).Return(new Dictionary<long, Migration> {
+				{ 1, migration1 },
+				{ 2, migration2 }
+			});
+
+			var actual = _target.GetPendingMigrations();
+
+			actual.Should().Have.SameValuesAs(new[] { migration1, migration2 });
+		}
+
+		[Test]
+		public void Shuld_get_applyed_migrations_if_migration_table_exists()
+		{
+			_database.Stub(x => x.MigrationsTableExists()).Return(true);
 			var migration1 = new Migration(1, "up", "dn");
 			var migration2 = new Migration(2, "up", "dn");
 			_repository.Stub(x => x.GetAll()).Return(new Dictionary<long, Migration> {
@@ -56,8 +74,25 @@ namespace SqlMigrator.Tests
 		}
 
 		[Test]
+		public void Shuld_get_no_migrations_if_migration_table_does_not_exists()
+		{
+			_database.Stub(x => x.MigrationsTableExists()).Return(false);
+			var migration1 = new Migration(1, "up", "dn");
+			var migration2 = new Migration(2, "up", "dn");
+			_repository.Stub(x => x.GetAll()).Return(new Dictionary<long, Migration> {
+				{ 1, migration1 },
+				{ 2, migration2 }
+			});
+
+			var actual = _target.GetApplyedMigrations();
+
+			actual.Should().Have.Count.EqualTo(0);
+		}
+
+		[Test]
 		public void Shuld_fail_when_an_applyed_migration_is_not_available()
 		{
+			_database.Stub(x => x.MigrationsTableExists()).Return(true);
 			var migration1 = new Migration(1, "up", "dn");
 			var migration2 = new Migration(2, "up", "dn");
 			_repository.Stub(x => x.GetAll()).Return(new Dictionary<long, Migration> {

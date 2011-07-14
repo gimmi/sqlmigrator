@@ -13,9 +13,20 @@ namespace SqlMigrator
 			_database = database;
 		}
 
-		public string BuildUp(IEnumerable<Migration> migrations, int count)
+		private StringBuilder CreateStringBuilder()
 		{
 			var ret = new StringBuilder();
+			if(!_database.MigrationsTableExists())
+			{
+				ret.AppendLine("-- Migrations table creation")
+					.AppendLine(_database.BuildCreateScript());
+			}
+			return ret;
+		}
+
+		public string BuildUp(IEnumerable<Migration> migrations, int count)
+		{
+			var ret = CreateStringBuilder();
 			foreach(Migration migration in migrations.OrderBy(m => m.Id).Take(count))
 			{
 				ret.AppendFormat("-- Migration {0}", migration).AppendLine()
@@ -27,7 +38,7 @@ namespace SqlMigrator
 
 		public string BuildDown(IEnumerable<Migration> migrations, int count)
 		{
-			var ret = new StringBuilder();
+			var ret = CreateStringBuilder();
 			foreach (Migration migration in migrations.OrderByDescending(m => m.Id).Take(count))
 			{
 				ret.AppendFormat("-- Migration {0}", migration).AppendLine()

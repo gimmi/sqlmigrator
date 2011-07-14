@@ -17,11 +17,20 @@ namespace SqlMigrator
 
 		public IEnumerable<Migration> GetPendingMigrations()
 		{
-			return _repository.GetAll().Values.Where(_database.IsMigrationPending);
+			IEnumerable<Migration> ret = _repository.GetAll().Values;
+			if (_database.MigrationsTableExists())
+			{
+				ret = ret.Where(_database.IsMigrationPending);
+			}
+			return ret;
 		}
 
 		public IEnumerable<Migration> GetApplyedMigrations()
 		{
+			if (!_database.MigrationsTableExists())
+			{
+				return new Migration[0];
+			}
 			var ret = new List<Migration>();
 			IDictionary<long, Migration> migrations = _repository.GetAll();
 			foreach(long id in _database.GetApplyedMigrations())

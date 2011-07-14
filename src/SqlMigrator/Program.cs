@@ -48,10 +48,6 @@ namespace SqlMigrator
 			{
 				script = scriptBuilder.BuildDown(migrationFilter.GetApplyedMigrations(), opts.Count);
 			}
-			else if(opts.Action == Action.Init)
-			{
-				script = db.BuildCreateScript();
-			}
 
 			if(string.IsNullOrWhiteSpace(opts.OutputFile))
 			{

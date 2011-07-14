@@ -13,7 +13,7 @@ namespace SqlMigrator
 		[Description(@"Path of the directory containing migration files. Default to '.\Migrations'")]
 		public string MigrationsDir = Path.Combine(Environment.CurrentDirectory, "Migrations");
 
-		[Description(@"Te action to execute. Available actions are 'Up', 'Down' and 'Init'. Default to 'Up'")]
+		[Description(@"Te action to execute. Available actions are 'Up', 'Down'. Default to 'Up'")]
 		public Action Action = Action.Up;
 
 		[Description(@"If specified, script will be written to this file instead of executed against DB")]
