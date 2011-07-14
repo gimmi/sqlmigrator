@@ -40,16 +40,16 @@ namespace SqlMigrator
 			Options opts = commandLineParser.Parse(args);
 			var db = new MssqlDatabase(opts.ConnStr);
 			var scriptBuilder = new ScriptBuilder(db);
-			var migrationRepository = new MigrationRepository(opts.MigrationsDir, opts.TextEncoding, db);
+			var migrationFilter = new MigrationFilter(new MigrationRepository(opts.MigrationsDir, opts.TextEncoding, db), db);
 
 			string script = null;
 			if(opts.Action == Action.Up)
 			{
-				script = scriptBuilder.BuildUp(migrationRepository.GetPendingMigrations(), opts.Count);
+				script = scriptBuilder.BuildUp(migrationFilter.GetPendingMigrations(), opts.Count);
 			}
 			else if(opts.Action == Action.Down)
 			{
-				script = scriptBuilder.BuildDown(migrationRepository.GetApplyedMigrations(), opts.Count);
+				script = scriptBuilder.BuildDown(migrationFilter.GetApplyedMigrations(), opts.Count);
 			}
 			else if(opts.Action == Action.Init)
 			{

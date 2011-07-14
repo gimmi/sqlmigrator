@@ -50,6 +50,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="CommandLineParserTest.cs" />
+    <Compile Include="MigrationFilterTest.cs" />
     <Compile Include="MigrationRepositoryTest.cs" />
     <Compile Include="ProgramTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

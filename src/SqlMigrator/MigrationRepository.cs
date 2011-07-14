@@ -20,22 +20,17 @@ namespace SqlMigrator
 			_database = database;
 		}
 
-		public IEnumerable<Migration> GetPendingMigrations()
+		public virtual IDictionary<long, Migration> GetAll()
 		{
-			return GetAll().Values.Where(_database.IsMigrationPending);
-		}
-
-		public IEnumerable<Migration> GetApplyedMigrations()
-		{
-			var ret = new List<Migration>();
-			IDictionary<long, Migration> migrations = GetAll();
-			foreach(long id in _database.GetApplyedMigrations())
+			var ret = new Dictionary<long, Migration>();
+			IEnumerable<FileInfo> files = Directory.GetFiles(_migrationsPath).Select(n => new FileInfo(n));
+			foreach (Migration migration in files.Where(f => GetMigrationIdFromFileName(f).HasValue).Select(Create))
 			{
-				if(!migrations.ContainsKey(id))
+				if (ret.ContainsKey(migration.Id))
 				{
-					throw new ApplicationException(string.Format("Migration #{0} has been applyed to database, but not found in migrations directory", id));
+					throw new ApplicationException(string.Format("Found more than one migration with id #{0}", migration.Id));
 				}
-				ret.Add(migrations[id]);
+				ret.Add(migration.Id, migration);
 			}
 			return ret;
 		}
@@ -53,25 +48,10 @@ namespace SqlMigrator
 			return null;
 		}
 
-		internal IDictionary<long, Migration> GetAll()
-		{
-			var ret = new Dictionary<long, Migration>();
-			IEnumerable<FileInfo> files = Directory.GetFiles(_migrationsPath).Select(n => new FileInfo(n));
-			foreach(Migration migration in files.Where(f => GetMigrationIdFromFileName(f).HasValue).Select(Create))
-			{
-				if(ret.ContainsKey(migration.Id))
-				{
-					throw new ApplicationException(string.Format("Found more than one migration with id #{0}", migration.Id));
-				}
-				ret.Add(migration.Id, migration);
-			}
-			return ret;
-		}
-
 		private Migration Create(FileInfo file)
 		{
 			string[] upDown = SplitScript(File.ReadAllText(file.FullName, _encoding));
-			var id = GetMigrationIdFromFileName(file).Value;
+			long id = GetMigrationIdFromFileName(file).Value;
 			return new Migration(id, upDown[0], upDown[1]);
 		}
 

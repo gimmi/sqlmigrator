@@ -46,6 +46,7 @@
     <Compile Include="Action.cs" />
     <Compile Include="CommandLineParser.cs" />
     <Compile Include="IDatabase.cs" />
+    <Compile Include="MigrationFilter.cs" />
     <Compile Include="MssqlDatabase.cs" />
     <Compile Include="Migration.cs" />
     <Compile Include="MigrationRepository.cs" />

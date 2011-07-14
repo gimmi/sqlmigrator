@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using NUnit.Framework;
 using Rhino.Mocks;
 using SharpTestsEx;
-using System.Linq;
 
 namespace SqlMigrator.Tests
 {
@@ -28,7 +28,7 @@ namespace SqlMigrator.Tests
 
 		private string AddFile(string name, string content = "")
 		{
-			var file = Path.Combine(_dir, name);
+			string file = Path.Combine(_dir, name);
 			File.WriteAllText(file, content);
 			return file;
 		}
@@ -46,8 +46,8 @@ namespace SqlMigrator.Tests
 			AddFile("002_Second_script.sql");
 			AddFile("003_Third_script.sql");
 
-			var actual = _target.GetAll();
-	
+			IDictionary<long, Migration> actual = _target.GetAll();
+
 			actual.Keys.Should().Have.SameValuesAs(new long[] { 1, 2, 3 });
 			actual[1].Id.Should().Be.EqualTo(1);
 			actual[1].Up.Should().Be.EqualTo("Up\n");
@@ -62,8 +62,8 @@ namespace SqlMigrator.Tests
 			AddFile("004_Text_file.txt");
 			AddFile("Text_file.txt");
 
-			var actual = _target.GetAll();
-	
+			IDictionary<long, Migration> actual = _target.GetAll();
+
 			actual.Should().Be.Empty();
 		}
 
@@ -74,14 +74,6 @@ namespace SqlMigrator.Tests
 			AddFile("001_Another_first_script.sql");
 
 			Executing.This(() => _target.GetAll()).Should().Throw<ApplicationException>().And.ValueOf.Message.Should().Be.EqualTo("Found more than one migration with id #1");
-		}
-
-		[Test]
-		public void Shuld_fail_when_an_applyed_migration_is_not_available()
-		{
-			_database.Stub(x => x.GetApplyedMigrations()).Return(new long[]{1});
-
-			Executing.This(() => _target.GetApplyedMigrations()).Should().Throw<ApplicationException>().And.ValueOf.Message.Should().Be.EqualTo("Migration #1 has been applyed to database, but not found in migrations directory");
 		}
 	}
 }
