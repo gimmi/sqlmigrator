@@ -1,7 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Data;
-using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -31,7 +28,7 @@ namespace SqlMigrator
 			log.WriteLine(typeof(Program).Assembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false).Cast<AssemblyCopyrightAttribute>().Single().Copyright);
 
 			var commandLineParser = new CommandLineParser<Options>();
-			if (args.Length == 0)
+			if(args.Length == 0)
 			{
 				log.WriteLine("Command line parameters:");
 				commandLineParser.PrintHelp(log);
