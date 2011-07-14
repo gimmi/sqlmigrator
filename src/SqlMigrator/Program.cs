@@ -11,7 +11,7 @@ namespace SqlMigrator
 		{
 			try
 			{
-				Main(args, Console.Out);
+				Run(args, Console.Out);
 				return 0;
 			}
 			catch(Exception e)
@@ -21,7 +21,7 @@ namespace SqlMigrator
 			}
 		}
 
-		public static void Main(string[] args, TextWriter log)
+		public static void Run(string[] args, TextWriter log)
 		{
 			log.WriteLine("{0} {1}", typeof(Program).Assembly.GetCustomAttributes(typeof(AssemblyProductAttribute), false).Cast<AssemblyProductAttribute>().Single().Product, typeof(Program).Assembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false).Cast<AssemblyInformationalVersionAttribute>().Single().InformationalVersion);
 			log.WriteLine(typeof(Program).Assembly.GetCustomAttributes(typeof(AssemblyDescriptionAttribute), false).Cast<AssemblyDescriptionAttribute>().Single().Description);

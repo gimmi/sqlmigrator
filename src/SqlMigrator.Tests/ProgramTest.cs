@@ -52,7 +52,7 @@ namespace SqlMigrator.Tests
 		[Test]
 		public void Functional_test()
 		{
-			Program.Main(new[] { "/action", "up", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations", "/outputfile", @".\TestScript.sql" }, new StringWriter(new StringBuilder()));
+			Program.Run(new[] { "/action", "up", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations", "/outputfile", @".\TestScript.sql" }, new StringWriter(new StringBuilder()));
 			TableExists("Migrations").Should().Be.False();
 			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE Migrations");
 			TableExists("Masters").Should().Be.False();
@@ -60,24 +60,24 @@ namespace SqlMigrator.Tests
 			TableExists("Details").Should().Be.False();
 			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE Details");
 
-			Program.Main(new[] { "/action", "up", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
+			Program.Run(new[] { "/action", "up", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
 			TableExists("Migrations").Should().Be.True();
 			TableExists("Masters").Should().Be.True();
 			TableExists("Details").Should().Be.True();
 
-			Program.Main(new[] { "/action", "down", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
+			Program.Run(new[] { "/action", "down", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
 			TableExists("Migrations").Should().Be.True();
 			TableExists("Masters").Should().Be.False();
 			TableExists("Details").Should().Be.False();
 
-			Program.Main(new[] { "/action", "up", "/count", "1", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
+			Program.Run(new[] { "/action", "up", "/count", "1", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
 			TableExists("Masters").Should().Be.True();
 			TableExists("Details").Should().Be.False();
 
-			Program.Main(new[] { "/action", "up", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
+			Program.Run(new[] { "/action", "up", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
 			TableExists("Details").Should().Be.True();
 
-			Program.Main(new[] { "/action", "down", "/count", "1", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
+			Program.Run(new[] { "/action", "down", "/count", "1", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
 			TableExists("Masters").Should().Be.True();
 			TableExists("Details").Should().Be.False();
 		}
