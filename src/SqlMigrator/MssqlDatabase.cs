@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -11,6 +12,15 @@ namespace SqlMigrator
 		public MssqlDatabase(string connstr)
 		{
 			_connstr = connstr;
+		}
+
+		public bool MigrationsTableExists()
+		{
+			using(var conn = new SqlConnection(_connstr))
+			{
+				conn.Open();
+				return new SqlCommand("SELECT OBJECT_ID('Migrations', 'U')", conn).ExecuteScalar() != DBNull.Value;
+			}
 		}
 
 		public bool IsMigrationPending(Migration migration)

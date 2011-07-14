@@ -10,5 +10,6 @@ namespace SqlMigrator
 		string BuildInsertScript(Migration migration);
 		string BuildCreateScript();
 		void Execute(string script);
+		bool MigrationsTableExists();
 	}
 }
