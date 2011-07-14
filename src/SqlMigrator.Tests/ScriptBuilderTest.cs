@@ -15,6 +15,7 @@ namespace SqlMigrator.Tests
 		{
 			_database = MockRepository.GenerateStub<IDatabase>();
 			_target = new ScriptBuilder(_database, new TextMessageWriter());
+			_database.Stub(x => x.GetStatementDelimiter()).Return(";");
 		}
 
 		[Test]
@@ -29,10 +30,10 @@ namespace SqlMigrator.Tests
 			}, 2);
 			actual.Should().Be.EqualTo(@"-- Migration #1
 1-up
-InsScript
+InsScript;
 -- Migration #2
 2-up
-InsScript
+InsScript;
 ");
 		}
 
@@ -48,10 +49,10 @@ InsScript
 			}, 2);
 			actual.Should().Be.EqualTo(@"-- Migration #3
 3-down
-DelScript
+DelScript;
 -- Migration #2
 2-down
-DelScript
+DelScript;
 ");
 		}
 		[Test]
@@ -64,10 +65,10 @@ DelScript
 				new Migration(1, "1-up", "1-down")
 			}, 2);
 			actual.Should().Be.EqualTo(@"-- Migrations table creation
-CreateScript
+CreateScript;
 -- Migration #1
 1-up
-InsScript
+InsScript;
 ");
 		}
 	}

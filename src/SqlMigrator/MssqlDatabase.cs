@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SqlMigrator
 {
@@ -78,19 +80,18 @@ namespace SqlMigrator
 			return @"CREATE TABLE Migrations([Id] BIGINT PRIMARY KEY NOT NULL, [Date] DATETIME NOT NULL DEFAULT GETDATE(), [User] NVARCHAR(128) NOT NULL DEFAULT SUSER_NAME(), [Host] NVARCHAR(128) NOT NULL DEFAULT HOST_NAME())";
 		}
 
-		public void Execute(string script)
+		public void Execute(string batch)
 		{
-			if(string.IsNullOrWhiteSpace(script))
-			{
-				return;
-			}
 			using(var conn = new SqlConnection(_connstr))
 			{
 				conn.Open();
 				SqlTransaction tran = conn.BeginTransaction();
 				try
 				{
-					new SqlCommand(script, conn, tran).ExecuteNonQuery();
+					foreach(string script in Regex.Split(batch, @"^\s*GO\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline).Where(s => !string.IsNullOrWhiteSpace(s)))
+					{
+						new SqlCommand(script, conn, tran).ExecuteNonQuery();
+					}
 					tran.Commit();
 				}
 				catch
@@ -99,6 +100,11 @@ namespace SqlMigrator
 					throw;
 				}
 			}
+		}
+
+		public string GetStatementDelimiter()
+		{
+			return Environment.NewLine + "GO";
 		}
 	}
 }

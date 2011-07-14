@@ -23,7 +23,8 @@ namespace SqlMigrator
 			{
 				_log.WriteLine("Adding migrations table creation to script");
 				ret.AppendLine("-- Migrations table creation")
-					.AppendLine(_database.BuildCreateScript());
+					.Append(_database.BuildCreateScript())
+					.AppendLine(_database.GetStatementDelimiter());
 			}
 			return ret;
 		}
@@ -36,7 +37,8 @@ namespace SqlMigrator
 				_log.WriteLine("Adding migration {0} to script", migration);
 				ret.AppendFormat("-- Migration {0}", migration).AppendLine()
 					.AppendLine(migration.Up)
-					.AppendLine(_database.BuildInsertScript(migration));
+					.Append(_database.BuildInsertScript(migration))
+					.AppendLine(_database.GetStatementDelimiter());
 			}
 			return ret.ToString();
 		}
@@ -49,7 +51,8 @@ namespace SqlMigrator
 				_log.WriteLine("Adding migration {0} to script", migration);
 				ret.AppendFormat("-- Migration {0}", migration).AppendLine()
 					.AppendLine(migration.Down)
-					.AppendLine(_database.BuildDeleteScript(migration));
+					.Append(_database.BuildDeleteScript(migration))
+					.AppendLine(_database.GetStatementDelimiter());
 			}
 			return ret.ToString();
 		}

@@ -9,7 +9,8 @@ namespace SqlMigrator
 		string BuildDeleteScript(Migration migration);
 		string BuildInsertScript(Migration migration);
 		string BuildCreateScript();
-		void Execute(string script);
+		void Execute(string batch);
 		bool MigrationsTableExists();
+		string GetStatementDelimiter();
 	}
 }
