@@ -12,6 +12,7 @@ namespace SqlMigrator
 			try
 			{
 				Run(args, Console.Out);
+				Console.WriteLine("Done");
 				return 0;
 			}
 			catch(Exception e)
@@ -36,25 +37,29 @@ namespace SqlMigrator
 			}
 			Options opts = commandLineParser.Parse(args);
 			var db = new MssqlDatabase(opts.ConnStr);
-			var scriptBuilder = new ScriptBuilder(db);
+			var scriptBuilder = new ScriptBuilder(db, log);
 			var migrationFilter = new MigrationFilter(new MigrationRepository(opts.MigrationsDir, opts.TextEncoding, db), db);
 
 			string script = null;
 			if(opts.Action == Action.Up)
 			{
+				log.WriteLine("Building Up script");
 				script = scriptBuilder.BuildUp(migrationFilter.GetPendingMigrations(), opts.Count);
 			}
 			else if(opts.Action == Action.Down)
 			{
+				log.WriteLine("Building Down script");
 				script = scriptBuilder.BuildDown(migrationFilter.GetApplyedMigrations(), opts.Count);
 			}
 
 			if(string.IsNullOrWhiteSpace(opts.OutputFile))
 			{
+				log.WriteLine("Executing script to {0}", opts.ConnStr);
 				db.Execute(script);
 			}
 			else
 			{
+				log.WriteLine("Saving script to {0}", opts.OutputFile);
 				File.WriteAllText(opts.OutputFile, script, opts.TextEncoding);
 			}
 		}

@@ -80,17 +80,17 @@ namespace SqlMigrator
 
 		public void Execute(string script)
 		{
-			var conn = new SqlConnection(_connstr);
-			conn.Open();
-			try
+			if(string.IsNullOrWhiteSpace(script))
 			{
-				IDbTransaction tran = conn.BeginTransaction();
+				return;
+			}
+			using(var conn = new SqlConnection(_connstr))
+			{
+				conn.Open();
+				SqlTransaction tran = conn.BeginTransaction();
 				try
 				{
-					IDbCommand cmd = conn.CreateCommand();
-					cmd.Transaction = tran;
-					cmd.CommandText = script;
-					cmd.ExecuteNonQuery();
+					new SqlCommand(script, conn, tran).ExecuteNonQuery();
 					tran.Commit();
 				}
 				catch
@@ -98,10 +98,6 @@ namespace SqlMigrator
 					tran.Rollback();
 					throw;
 				}
-			}
-			finally
-			{
-				conn.Close();
 			}
 		}
 	}

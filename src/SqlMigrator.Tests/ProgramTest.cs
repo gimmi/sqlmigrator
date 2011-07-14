@@ -13,7 +13,7 @@ namespace SqlMigrator.Tests
 		private const string TestConnStr = @"Data Source=.\SQLEXPRESS;Initial Catalog=SqlMigratorTests;Integrated Security=True";
 		private const string SetupConnStr = @"Data Source=.\SQLEXPRESS;Initial Catalog=master;Integrated Security=True";
 
-		[TestFixtureSetUp]
+		[SetUp]
 		public void TestFixtureSetUp()
 		{
 			SqlConnection.ClearAllPools();
@@ -80,6 +80,15 @@ namespace SqlMigrator.Tests
 			Program.Run(new[] { "/action", "down", "/count", "1", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
 			TableExists("Masters").Should().Be.True();
 			TableExists("Details").Should().Be.False();
+		}
+
+		[Test]
+		public void Should_not_throw_exception_when_no_scripts_to_apply()
+		{
+			Program.Run(new[] { "/action", "up", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
+
+			// the second run will not apply any migration
+			Program.Run(new[] { "/action", "up", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
 		}
 	}
 }

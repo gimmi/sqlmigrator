@@ -14,7 +14,7 @@ namespace SqlMigrator.Tests
 		public void SetUp()
 		{
 			_database = MockRepository.GenerateStub<IDatabase>();
-			_target = new ScriptBuilder(_database);
+			_target = new ScriptBuilder(_database, new TextMessageWriter());
 		}
 
 		[Test]
