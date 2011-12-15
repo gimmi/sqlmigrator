@@ -15,7 +15,7 @@ namespace SqlMigrator.Tests
 		private const string SetupConnStr = @"Data Source=.\SQLEXPRESS;Initial Catalog=master;Integrated Security=True";
 
 		[SetUp]
-		public void TestFixtureSetUp()
+		public void SetUp()
 		{
 			SqlConnection.ClearAllPools();
 			Execute("IF DB_ID('SqlMigratorTests') IS NOT NULL DROP DATABASE SqlMigratorTests");
@@ -91,6 +91,13 @@ namespace SqlMigrator.Tests
 
 			// the second run will not apply any migration
 			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
+		}
+
+		[Test]
+		public void Should_set_timeout()
+		{
+			Executing.This(() => Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TimeoutMigration", "/timeout", "2" }, new StringWriter(new StringBuilder())))
+				.Should().Throw<SqlException>().And.Exception.Message.Should().Contain("Timeout expired.");
 		}
 	}
 }
