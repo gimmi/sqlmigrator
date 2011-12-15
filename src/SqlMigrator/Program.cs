@@ -40,16 +40,16 @@ namespace SqlMigrator
 			var scriptBuilder = new ScriptBuilder(db, log);
 			var migrationFilter = new MigrationFilter(new MigrationRepository(opts.MigrationsDir, opts.TextEncoding, db), db);
 
-			string script = null;
-			if(opts.Action == Action.Up)
+			string script;
+			if(opts.Count >= 0)
 			{
 				log.WriteLine("Building Up script");
 				script = scriptBuilder.BuildUp(migrationFilter.GetPendingMigrations(), opts.Count);
 			}
-			else if(opts.Action == Action.Down)
+			else
 			{
 				log.WriteLine("Building Down script");
-				script = scriptBuilder.BuildDown(migrationFilter.GetApplyedMigrations(), opts.Count);
+				script = scriptBuilder.BuildDown(migrationFilter.GetApplyedMigrations(), -opts.Count);
 			}
 
 			if(string.IsNullOrWhiteSpace(opts.OutputFile))
