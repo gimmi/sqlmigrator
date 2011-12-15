@@ -10,10 +10,12 @@ namespace SqlMigrator
 	public class MssqlDatabase : IDatabase
 	{
 		private readonly string _connstr;
+		private readonly int _commandTimeout;
 
-		public MssqlDatabase(string connstr)
+		public MssqlDatabase(string connstr, int commandTimeout)
 		{
 			_connstr = connstr;
+			_commandTimeout = commandTimeout;
 		}
 
 		public bool MigrationsTableExists()
@@ -90,7 +92,7 @@ namespace SqlMigrator
 				{
 					foreach(string script in Regex.Split(batch, @"^\s*GO\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline).Where(s => !string.IsNullOrWhiteSpace(s)))
 					{
-						new SqlCommand(script, conn, tran).ExecuteNonQuery();
+						new SqlCommand(script, conn, tran) { CommandTimeout = _commandTimeout }.ExecuteNonQuery();
 					}
 					tran.Commit();
 				}

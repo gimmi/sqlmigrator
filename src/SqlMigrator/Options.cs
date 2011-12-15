@@ -21,5 +21,8 @@ namespace SqlMigrator
 
 		[Description(@"Migrations to apply e.g. 2 to apply the next 2 migrations, -2 to rollback the last 2 migrations")]
 		public int Count = int.MaxValue;
+
+		[Description(@"Timeout for command statements in seconds, default to 30")]
+		public int Timeout = 30;
 	}
 }

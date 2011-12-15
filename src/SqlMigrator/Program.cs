@@ -36,7 +36,7 @@ namespace SqlMigrator
 				return;
 			}
 			Options opts = commandLineParser.Parse(args);
-			var db = new MssqlDatabase(opts.ConnStr);
+			var db = new MssqlDatabase(opts.ConnStr, opts.Timeout);
 			var scriptBuilder = new ScriptBuilder(db, log);
 			var migrationFilter = new MigrationFilter(new MigrationRepository(opts.MigrationsDir, opts.TextEncoding, db), db);
 
