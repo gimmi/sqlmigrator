@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.IO;
-using System.Text;
 using NUnit.Framework;
 using SharpTestsEx;
 
