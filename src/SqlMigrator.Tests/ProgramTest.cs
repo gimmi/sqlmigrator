@@ -10,8 +10,6 @@ namespace SqlMigrator.Tests
 	[TestFixture]
 	public class ProgramTest
 	{
-		private StringBuilder _sb;
-
 		/*
 		 * Uses SQL server LocalDB
 		 * Database file is located at: C:\Users\<user>\AppData\Local\Microsoft\Microsoft SQL Server Local DB\Instances\v11.0
@@ -30,7 +28,6 @@ namespace SqlMigrator.Tests
 			SqlConnection.ClearAllPools();
 			Execute("IF DB_ID('SqlMigratorTests') IS NOT NULL DROP DATABASE SqlMigratorTests");
 			Execute("CREATE DATABASE SqlMigratorTests");
-			_sb = new StringBuilder();
 		}
 
 		private void Execute(string sql)
@@ -64,7 +61,7 @@ namespace SqlMigrator.Tests
 		[Test]
 		public void Functional_test()
 		{
-			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations", "/outputfile", @".\TestScript.sql" }, new StringWriter(_sb));
+			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations", "/outputfile", @".\TestScript.sql" }, TextWriter.Null);
 			TableExists("Migrations").Should().Be.False();
 			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE Migrations");
 			TableExists("Masters").Should().Be.False();
@@ -72,24 +69,24 @@ namespace SqlMigrator.Tests
 			TableExists("Details").Should().Be.False();
 			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE Details");
 
-			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(_sb));
+			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
 			TableExists("Migrations").Should().Be.True();
 			TableExists("Masters").Should().Be.True();
 			TableExists("Details").Should().Be.True();
 
-			Program.Run(new[] { "/count", "-100", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(_sb));
+			Program.Run(new[] { "/count", "-100", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
 			TableExists("Migrations").Should().Be.True();
 			TableExists("Masters").Should().Be.False();
 			TableExists("Details").Should().Be.False();
 
-			Program.Run(new[] { "/count", "1", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(_sb));
+			Program.Run(new[] { "/count", "1", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
 			TableExists("Masters").Should().Be.True();
 			TableExists("Details").Should().Be.False();
 
-			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(_sb));
+			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
 			TableExists("Details").Should().Be.True();
 
-			Program.Run(new[] { "/count", "-1", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(_sb));
+			Program.Run(new[] { "/count", "-1", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
 			TableExists("Masters").Should().Be.True();
 			TableExists("Details").Should().Be.False();
 		}
@@ -97,16 +94,16 @@ namespace SqlMigrator.Tests
 		[Test]
 		public void Should_not_throw_exception_when_no_scripts_to_apply()
 		{
-			Program.Run(new[] {"/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
+			Program.Run(new[] {"/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
 
 			// the second run will not apply any migration
-			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, new StringWriter(new StringBuilder()));
+			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
 		}
 
 		[Test]
 		public void Should_set_timeout()
 		{
-			Executing.This(() => Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TimeoutMigration", "/timeout", "2" }, new StringWriter(new StringBuilder())))
+			Executing.This(() => Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TimeoutMigration", "/timeout", "2" }, TextWriter.Null))
 				.Should().Throw<SqlException>().And.Exception.Message.Should().Contain("Timeout expired.");
 		}
 	}
