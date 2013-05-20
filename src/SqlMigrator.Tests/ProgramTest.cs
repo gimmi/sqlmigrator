@@ -11,8 +11,18 @@ namespace SqlMigrator.Tests
 	public class ProgramTest
 	{
 		private StringBuilder _sb;
-		private const string TestConnStr = @"Data Source=.\SQLEXPRESS;Initial Catalog=SqlMigratorTests;Integrated Security=True";
-		private const string SetupConnStr = @"Data Source=.\SQLEXPRESS;Initial Catalog=master;Integrated Security=True";
+
+		/*
+		 * Uses SQL server LocalDB
+		 * Database file is located at: C:\Users\<user>\AppData\Local\Microsoft\Microsoft SQL Server Local DB\Instances\v11.0
+		 * see http://msdn.microsoft.com/en-us/library/hh510202.aspx
+		 * 
+		 * For VS2010 you need to install:
+		 * SQL Server 2012 express LocalDB
+		 * http://support.microsoft.com/kb/2544514
+		 */
+		private const string TestConnStr = @"Server=(localdb)\v11.0;Integrated Security=true;Initial Catalog=SqlMigratorTests";
+		private const string SetupConnStr = @"Server=(localdb)\v11.0;Integrated Security=true;Initial Catalog=master";
 
 		[SetUp]
 		public void SetUp()
