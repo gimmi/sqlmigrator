@@ -25,36 +25,8 @@ namespace SqlMigrator.Tests
 		public void SetUp()
 		{
 			SqlConnection.ClearAllPools();
-			Execute("IF DB_ID('SqlMigratorTests') IS NOT NULL DROP DATABASE SqlMigratorTests");
-			Execute("CREATE DATABASE SqlMigratorTests");
-		}
-
-		private void Execute(string sql)
-		{
-			var conn = new SqlConnection(SetupConnStr);
-			conn.Open();
-			try
-			{
-				new SqlCommand(sql, conn).ExecuteNonQuery();
-			}
-			finally
-			{
-				conn.Close();
-			}
-		}
-
-		private bool TableExists(string table)
-		{
-			var conn = new SqlConnection(TestConnStr);
-			conn.Open();
-			try
-			{
-				return new SqlCommand("SELECT OBJECT_ID('" + table + "', 'U')", conn).ExecuteScalar() != DBNull.Value;
-			}
-			finally
-			{
-				conn.Close();
-			}
+			ExecuteNonQuery("IF DB_ID('SqlMigratorTests') IS NOT NULL DROP DATABASE SqlMigratorTests");
+			ExecuteNonQuery("CREATE DATABASE SqlMigratorTests");
 		}
 
 		[Test]
@@ -93,7 +65,7 @@ namespace SqlMigrator.Tests
 		[Test]
 		public void Should_not_throw_exception_when_no_scripts_to_apply()
 		{
-			Program.Run(new[] {"/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
+			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
 
 			// the second run will not apply any migration
 			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
@@ -104,6 +76,47 @@ namespace SqlMigrator.Tests
 		{
 			Executing.This(() => Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TimeoutMigration", "/timeout", "2" }, TextWriter.Null))
 				.Should().Throw<SqlException>().And.Exception.Message.Should().Contain("Timeout expired.");
+		}
+
+		private void ExecuteNonQuery(string sql, string database = null)
+		{
+			var conn = new SqlConnection(SetupConnStr);
+			conn.Open();
+			try
+			{
+				if (!string.IsNullOrWhiteSpace(database))
+				{
+					conn.ChangeDatabase(database);
+				}
+				new SqlCommand(sql, conn).ExecuteNonQuery();
+			}
+			finally
+			{
+				conn.Close();
+			}
+		}
+
+		private bool TableExists(string table)
+		{
+			return ExecuteScalar("SELECT OBJECT_ID('" + table + "', 'U')", "SqlMigratorTests") != DBNull.Value;
+		}
+
+		private object ExecuteScalar(string sql, string database = null)
+		{
+			var conn = new SqlConnection(SetupConnStr);
+			conn.Open();
+			try
+			{
+				if (!string.IsNullOrWhiteSpace(database))
+				{
+					conn.ChangeDatabase(database);
+				}
+				return new SqlCommand(sql, conn).ExecuteScalar();
+			}
+			finally
+			{
+				conn.Close();
+			}
 		}
 	}
 }
