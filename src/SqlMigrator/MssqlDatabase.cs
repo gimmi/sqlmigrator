@@ -20,6 +20,26 @@ namespace SqlMigrator
 			_commandTimeout = commandTimeout;
 		}
 
+		public void DropDatabase()
+		{
+			SqlConnection.ClearAllPools();
+			using (var conn = new SqlConnection(_connstr))
+			{
+				conn.Open();
+				new SqlCommand(string.Format("IF DB_ID('{0}') IS NOT NULL DROP DATABASE {0}", _databaseName), conn).ExecuteNonQuery();
+			}
+		}
+
+		public void CreateDatabase()
+		{
+			SqlConnection.ClearAllPools();
+			using (var conn = new SqlConnection(_connstr))
+			{
+				conn.Open();
+				new SqlCommand(string.Format("IF DB_ID('{0}') IS NULL CREATE DATABASE {0}", _databaseName), conn).ExecuteNonQuery();
+			}
+		}
+
 		public bool MigrationsTableExists()
 		{
 			using (var conn = OpenConnectionAndChangeDb())

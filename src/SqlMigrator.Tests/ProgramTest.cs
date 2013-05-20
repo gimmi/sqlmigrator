@@ -92,6 +92,27 @@ namespace SqlMigrator.Tests
 				.Should().Throw<SqlException>().And.Exception.Message.Should().Contain("Timeout expired.");
 		}
 
+		[Test]
+		public void Should_drop_and_recreate_existing_db()
+		{
+			DropDatabaseIfExists("SqlMigratorTests");
+			CreateDatabase("SqlMigratorTests");
+			ExecuteNonQuery("CREATE TABLE OldTable(Id int NOT NULL PRIMARY KEY)", "SqlMigratorTests");
+
+			Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TestMigrations", "/dropdb", "true", "/createdb", "true" }, TextWriter.Null);
+
+			TableExists("SqlMigratorTests", "Migrations").Should().Be.True();
+			TableExists("SqlMigratorTests", "OldTable").Should().Be.False();
+		}
+
+		[Test]
+		public void Should_create_db_if_does_not_exists()
+		{
+			Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TestMigrations", "/createdb", "true" }, TextWriter.Null);
+
+			TableExists("SqlMigratorTests", "Migrations").Should().Be.True();
+		}
+
 		private void CreateDatabase(string database)
 		{
 			ExecuteNonQuery(string.Concat("CREATE DATABASE ", database));

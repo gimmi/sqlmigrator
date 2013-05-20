@@ -37,6 +37,16 @@ namespace SqlMigrator
 			}
 			Options opts = commandLineParser.Parse(args);
 			var db = new MssqlDatabase(opts.ConnStr, opts.DbName, opts.Timeout);
+			if (opts.DropDb)
+			{
+				log.WriteLine("Will drop database if exists");
+				db.DropDatabase();
+			}
+			if (opts.CreateDb)
+			{
+				log.WriteLine("Will create database if does not exists");
+				db.CreateDatabase();
+			}
 			var scriptBuilder = new ScriptBuilder(db, log);
 			var migrationFilter = new MigrationFilter(new MigrationRepository(opts.MigrationsDir, opts.TextEncoding, db), db);
 

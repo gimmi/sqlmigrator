@@ -27,5 +27,11 @@ namespace SqlMigrator
 
 		[Description(@"The database to switch to after connection, default to none meaning that no database switch is performed.")]
 		public string DbName;
+
+		[Description(@"When true the database will be dropped if already exists, default to false.")]
+		public bool DropDb;
+
+		[Description(@"When true the database will be created if does not already exists, default to false.")]
+		public bool CreateDb;
 	}
 }

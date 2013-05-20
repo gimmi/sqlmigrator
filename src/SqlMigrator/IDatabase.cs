@@ -12,5 +12,7 @@ namespace SqlMigrator
 		void Execute(string batch);
 		bool MigrationsTableExists();
 		string GetStatementDelimiter();
+		void DropDatabase();
+		void CreateDatabase();
 	}
 }
