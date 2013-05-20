@@ -10,44 +10,37 @@ namespace SqlMigrator
 	public class MssqlDatabase : IDatabase
 	{
 		private readonly string _connstr;
+		private readonly string _databaseName;
 		private readonly int _commandTimeout;
 
-		public MssqlDatabase(string connstr, int commandTimeout)
+		public MssqlDatabase(string connstr, string databaseName, int commandTimeout)
 		{
 			_connstr = connstr;
+			_databaseName = databaseName;
 			_commandTimeout = commandTimeout;
 		}
 
 		public bool MigrationsTableExists()
 		{
-			using(var conn = new SqlConnection(_connstr))
+			using (var conn = OpenConnectionAndChangeDb())
 			{
-				conn.Open();
 				return new SqlCommand("SELECT OBJECT_ID('Migrations', 'U')", conn).ExecuteScalar() != DBNull.Value;
 			}
 		}
 
 		public bool IsMigrationPending(Migration migration)
 		{
-			var conn = new SqlConnection(_connstr);
-			conn.Open();
-			try
+			using (var conn = OpenConnectionAndChangeDb())
 			{
 				IDbCommand cmd = conn.CreateCommand();
 				cmd.CommandText = string.Format("SELECT COUNT(*) FROM Migrations WHERE Id = {0}", migration.Id);
 				return (int)cmd.ExecuteScalar() < 1;
 			}
-			finally
-			{
-				conn.Close();
-			}
 		}
 
 		public IEnumerable<long> GetApplyedMigrations()
 		{
-			var conn = new SqlConnection(_connstr);
-			conn.Open();
-			try
+			using (var conn = OpenConnectionAndChangeDb())
 			{
 				IDbCommand cmd = conn.CreateCommand();
 				cmd.CommandText = "SELECT Id FROM Migrations";
@@ -60,10 +53,6 @@ namespace SqlMigrator
 					}
 				}
 				return ret;
-			}
-			finally
-			{
-				conn.Close();
 			}
 		}
 
@@ -84,9 +73,8 @@ namespace SqlMigrator
 
 		public void Execute(string batch)
 		{
-			using(var conn = new SqlConnection(_connstr))
+			using(var conn = OpenConnectionAndChangeDb())
 			{
-				conn.Open();
 				SqlTransaction tran = conn.BeginTransaction();
 				try
 				{
@@ -102,6 +90,17 @@ namespace SqlMigrator
 					throw;
 				}
 			}
+		}
+
+		private SqlConnection OpenConnectionAndChangeDb()
+		{
+			var conn = new SqlConnection(_connstr);
+			conn.Open();
+			if (!string.IsNullOrWhiteSpace(_databaseName))
+			{
+				conn.ChangeDatabase(_databaseName);
+			}
+			return conn;
 		}
 
 		public string GetStatementDelimiter()

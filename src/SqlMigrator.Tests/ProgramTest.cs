@@ -18,69 +18,94 @@ namespace SqlMigrator.Tests
 		 * SQL Server 2012 express LocalDB
 		 * http://support.microsoft.com/kb/2544514
 		 */
-		private const string TestConnStr = @"Server=(localdb)\v11.0;Integrated Security=true;Initial Catalog=SqlMigratorTests";
-		private const string SetupConnStr = @"Server=(localdb)\v11.0;Integrated Security=true;Initial Catalog=master";
-
-		[SetUp]
-		public void SetUp()
-		{
-			SqlConnection.ClearAllPools();
-			ExecuteNonQuery("IF DB_ID('SqlMigratorTests') IS NOT NULL DROP DATABASE SqlMigratorTests");
-			ExecuteNonQuery("CREATE DATABASE SqlMigratorTests");
-		}
+		private const string ConnStr = @"Server=(localdb)\v11.0;Integrated Security=true";
 
 		[Test]
 		public void Functional_test()
 		{
-			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations", "/outputfile", @".\TestScript.sql" }, TextWriter.Null);
-			TableExists("Migrations").Should().Be.False();
+			DropDatabaseIfExists("SqlMigratorTests");
+			CreateDatabase("SqlMigratorTests");
+
+			Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TestMigrations", "/outputfile", @".\TestScript.sql" }, TextWriter.Null);
+			TableExists("SqlMigratorTests", "Migrations").Should().Be.False();
 			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE Migrations");
-			TableExists("Masters").Should().Be.False();
+			TableExists("SqlMigratorTests", "Masters").Should().Be.False();
 			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE Masters");
-			TableExists("Details").Should().Be.False();
+			TableExists("SqlMigratorTests", "Details").Should().Be.False();
 			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE Details");
 
-			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
-			TableExists("Migrations").Should().Be.True();
-			TableExists("Masters").Should().Be.True();
-			TableExists("Details").Should().Be.True();
+			Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
+			TableExists("SqlMigratorTests", "Migrations").Should().Be.True();
+			TableExists("SqlMigratorTests", "Masters").Should().Be.True();
+			TableExists("SqlMigratorTests", "Details").Should().Be.True();
 
-			Program.Run(new[] { "/count", "-100", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
-			TableExists("Migrations").Should().Be.True();
-			TableExists("Masters").Should().Be.False();
-			TableExists("Details").Should().Be.False();
+			Program.Run(new[] { "/count", "-100", "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
+			TableExists("SqlMigratorTests", "Migrations").Should().Be.True();
+			TableExists("SqlMigratorTests", "Masters").Should().Be.False();
+			TableExists("SqlMigratorTests", "Details").Should().Be.False();
 
-			Program.Run(new[] { "/count", "1", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
-			TableExists("Masters").Should().Be.True();
-			TableExists("Details").Should().Be.False();
+			Program.Run(new[] { "/count", "1", "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
+			TableExists("SqlMigratorTests", "Masters").Should().Be.True();
+			TableExists("SqlMigratorTests", "Details").Should().Be.False();
 
-			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
-			TableExists("Details").Should().Be.True();
+			Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
+			TableExists("SqlMigratorTests", "Details").Should().Be.True();
 
-			Program.Run(new[] { "/count", "-1", "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
-			TableExists("Masters").Should().Be.True();
-			TableExists("Details").Should().Be.False();
+			Program.Run(new[] { "/count", "-1", "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
+			TableExists("SqlMigratorTests", "Masters").Should().Be.True();
+			TableExists("SqlMigratorTests", "Details").Should().Be.False();
+		}
+
+		[Test]
+		public void Should_use_database_from_connstr_when_database_not_specified()
+		{
+			DropDatabaseIfExists("SqlMigratorTests");
+			CreateDatabase("SqlMigratorTests");
+			const string connStrWithDatabase = ConnStr + ";Initial Catalog=SqlMigratorTests";
+
+			Program.Run(new[] { "/connstr", connStrWithDatabase, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
+			
+			TableExists("SqlMigratorTests", "Migrations").Should().Be.True();
+			TableExists("SqlMigratorTests", "Masters").Should().Be.True();
+			TableExists("SqlMigratorTests", "Details").Should().Be.True();
 		}
 
 		[Test]
 		public void Should_not_throw_exception_when_no_scripts_to_apply()
 		{
-			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
+			DropDatabaseIfExists("SqlMigratorTests");
+			CreateDatabase("SqlMigratorTests");
+
+			Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
 
 			// the second run will not apply any migration
-			Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
+			Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TestMigrations" }, TextWriter.Null);
 		}
 
 		[Test]
 		public void Should_set_timeout()
 		{
-			Executing.This(() => Program.Run(new[] { "/connstr", TestConnStr, "/migrationsdir", @".\TimeoutMigration", "/timeout", "2" }, TextWriter.Null))
+			DropDatabaseIfExists("SqlMigratorTests");
+			CreateDatabase("SqlMigratorTests");
+
+			Executing.This(() => Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TimeoutMigration", "/timeout", "2" }, TextWriter.Null))
 				.Should().Throw<SqlException>().And.Exception.Message.Should().Contain("Timeout expired.");
+		}
+
+		private void CreateDatabase(string database)
+		{
+			ExecuteNonQuery(string.Concat("CREATE DATABASE ", database));
+		}
+
+		private void DropDatabaseIfExists(string database)
+		{
+			SqlConnection.ClearAllPools();
+			ExecuteNonQuery(string.Format("IF DB_ID('{0}') IS NOT NULL DROP DATABASE {0}", database));
 		}
 
 		private void ExecuteNonQuery(string sql, string database = null)
 		{
-			var conn = new SqlConnection(SetupConnStr);
+			var conn = new SqlConnection(ConnStr);
 			conn.Open();
 			try
 			{
@@ -96,14 +121,14 @@ namespace SqlMigrator.Tests
 			}
 		}
 
-		private bool TableExists(string table)
+		private bool TableExists(string database, string table)
 		{
-			return ExecuteScalar("SELECT OBJECT_ID('" + table + "', 'U')", "SqlMigratorTests") != DBNull.Value;
+			return ExecuteScalar("SELECT OBJECT_ID('" + table + "', 'U')", database) != DBNull.Value;
 		}
 
 		private object ExecuteScalar(string sql, string database = null)
 		{
-			var conn = new SqlConnection(SetupConnStr);
+			var conn = new SqlConnection(ConnStr);
 			conn.Open();
 			try
 			{
