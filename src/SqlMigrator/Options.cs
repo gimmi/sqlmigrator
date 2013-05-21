@@ -25,7 +25,7 @@ namespace SqlMigrator
 		[Description(@"Timeout for command statements in seconds, default to 30")]
 		public int Timeout = 30;
 
-		[Description(@"The database to switch to after connection, default to none meaning that no database switch is performed.")]
+		[Description(@"The database to switch to after connection, default to null meaning that no database switch is performed.")]
 		public string DbName;
 
 		[Description(@"When true the database will be dropped if already exists, default to false.")]

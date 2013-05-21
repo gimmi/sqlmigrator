@@ -116,10 +116,7 @@ namespace SqlMigrator
 		{
 			var conn = new SqlConnection(_connstr);
 			conn.Open();
-			if (!string.IsNullOrWhiteSpace(_databaseName))
-			{
-				conn.ChangeDatabase(_databaseName);
-			}
+			conn.ChangeDatabase(_databaseName ?? conn.Database);
 			return conn;
 		}
 
