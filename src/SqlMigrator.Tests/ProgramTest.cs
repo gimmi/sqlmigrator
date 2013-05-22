@@ -28,7 +28,7 @@ namespace SqlMigrator.Tests
 
 			Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TestMigrations", "/outputfile", @".\TestScript.sql" }, TextWriter.Null);
 			TableExists("SqlMigratorTests", "Migrations").Should().Be.False();
-			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE Migrations");
+			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE [Migrations]");
 			TableExists("SqlMigratorTests", "Masters").Should().Be.False();
 			File.ReadAllText(@".\TestScript.sql").Should().Contain("CREATE TABLE Masters");
 			TableExists("SqlMigratorTests", "Details").Should().Be.False();
@@ -109,6 +109,19 @@ namespace SqlMigrator.Tests
 			Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\ChangeDbMigrations", "/count", "-1" }, TextWriter.Null);
 
 			ExecuteScalar<int>("SELECT COUNT(*) FROM SqlMigratorTests.dbo.Migrations").Should().Be.EqualTo(0);
+		}
+
+		[Test]
+		public void Should_override_migration_table_name()
+		{
+			DropDatabaseIfExists("SqlMigratorTests");
+			CreateDatabase("SqlMigratorTests");
+
+			Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TestMigrations", "/migrationstablename", "OverriddenMigrations" }, TextWriter.Null);
+
+			TableExists("SqlMigratorTests", "Migrations").Should().Be.False();
+			TableExists("SqlMigratorTests", "OverriddenMigrations").Should().Be.True();
+			ExecuteScalar<int>("SELECT COUNT(*) FROM SqlMigratorTests.dbo.OverriddenMigrations").Should().Be.EqualTo(2);
 		}
 
 		private void CreateDatabase(string database)

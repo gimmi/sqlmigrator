@@ -13,19 +13,21 @@ namespace SqlMigrator
 		private readonly string _connstr;
 		private readonly string _databaseName;
 		private readonly int _commandTimeout;
+		private readonly string _migrationsTableName;
 
-		public MssqlDatabase(string connstr, string databaseName, int commandTimeout)
+		public MssqlDatabase(string connstr, string databaseName, int commandTimeout, string migrationsTableName)
 		{
 			_connstr = connstr;
 			_databaseName = databaseName;
 			_commandTimeout = commandTimeout;
+			_migrationsTableName = migrationsTableName;
 		}
 
 		public bool MigrationsTableExists()
 		{
 			using (var conn = OpenConnectionAndChangeDb())
 			{
-				return new SqlCommand("SELECT OBJECT_ID('Migrations', 'U')", conn).ExecuteScalar() != DBNull.Value;
+				return new SqlCommand(string.Concat("SELECT OBJECT_ID('", _migrationsTableName, "', 'U')"), conn).ExecuteScalar() != DBNull.Value;
 			}
 		}
 
@@ -34,7 +36,7 @@ namespace SqlMigrator
 			using (var conn = OpenConnectionAndChangeDb())
 			{
 				IDbCommand cmd = conn.CreateCommand();
-				cmd.CommandText = string.Concat("SELECT COUNT(*) FROM Migrations WHERE Id = ", migration.Id);
+				cmd.CommandText = string.Concat("SELECT COUNT(*) FROM [", _migrationsTableName, "] WHERE Id = ", migration.Id);
 				return (int)cmd.ExecuteScalar() < 1;
 			}
 		}
@@ -44,7 +46,7 @@ namespace SqlMigrator
 			using (var conn = OpenConnectionAndChangeDb())
 			{
 				IDbCommand cmd = conn.CreateCommand();
-				cmd.CommandText = "SELECT Id FROM Migrations";
+				cmd.CommandText = string.Concat("SELECT Id FROM [", _migrationsTableName, "]");
 				var ret = new List<long>();
 				using(IDataReader rdr = cmd.ExecuteReader())
 				{
@@ -59,17 +61,17 @@ namespace SqlMigrator
 
 		public string BuildDeleteScript(Migration migration)
 		{
-			return BuildSqlScript("DELETE Migrations WHERE Id = ", migration.Id);
+			return BuildSqlScript("DELETE [", _migrationsTableName, "] WHERE Id = ", migration.Id);
 		}
 
 		public string BuildInsertScript(Migration migration)
 		{
-			return BuildSqlScript("INSERT INTO Migrations(Id) VALUES(", migration.Id, ")");
+			return BuildSqlScript("INSERT INTO [", _migrationsTableName, "](Id) VALUES(", migration.Id, ")");
 		}
 
 		public string BuildCreateScript()
 		{
-			return BuildSqlScript(@"CREATE TABLE Migrations([Id] BIGINT PRIMARY KEY NOT NULL, [Date] DATETIME NOT NULL DEFAULT GETDATE(), [User] NVARCHAR(128) NOT NULL DEFAULT SUSER_NAME(), [Host] NVARCHAR(128) NOT NULL DEFAULT HOST_NAME())");
+			return BuildSqlScript(@"CREATE TABLE [", _migrationsTableName, "]([Id] BIGINT PRIMARY KEY NOT NULL, [Date] DATETIME NOT NULL DEFAULT GETDATE(), [User] NVARCHAR(128) NOT NULL DEFAULT SUSER_NAME(), [Host] NVARCHAR(128) NOT NULL DEFAULT HOST_NAME())");
 		}
 
 		public void Execute(string batch)

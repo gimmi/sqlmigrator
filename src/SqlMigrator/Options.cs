@@ -27,5 +27,8 @@ namespace SqlMigrator
 
 		[Description(@"The database to switch to after connection, default to none meaning that no database switch is performed.")]
 		public string DbName;
+
+		[Description(@"The name of the migrations table, default to 'Migrations'")]
+		public string MigrationsTableName = "Migrations";
 	}
 }
