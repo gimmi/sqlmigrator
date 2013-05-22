@@ -98,10 +98,17 @@ namespace SqlMigrator.Tests
 			DropDatabaseIfExists("SqlMigratorTests");
 			CreateDatabase("SqlMigratorTests");
 
+			DropDatabaseIfExists("SqlMigratorTests_Other");
+			CreateDatabase("SqlMigratorTests_Other");
+
 			Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\ChangeDbMigrations" }, TextWriter.Null);
 
 			TableExists("SqlMigratorTests", "Migrations").Should().Be.True();
-			TableExists("SqlMigratorTests", "Tbl").Should().Be.True();
+			ExecuteScalar<int>("SELECT COUNT(*) FROM SqlMigratorTests.dbo.Migrations").Should().Be.EqualTo(1);
+
+			Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\ChangeDbMigrations", "/count", "-1" }, TextWriter.Null);
+
+			ExecuteScalar<int>("SELECT COUNT(*) FROM SqlMigratorTests.dbo.Migrations").Should().Be.EqualTo(0);
 		}
 
 		private void CreateDatabase(string database)
@@ -135,10 +142,10 @@ namespace SqlMigrator.Tests
 
 		private bool TableExists(string database, string table)
 		{
-			return ExecuteScalar("SELECT OBJECT_ID('" + table + "', 'U')", database) != DBNull.Value;
+			return ExecuteScalar<object>("SELECT OBJECT_ID('" + table + "', 'U')", database) != DBNull.Value;
 		}
 
-		private object ExecuteScalar(string sql, string database = null)
+		private T ExecuteScalar<T>(string sql, string database = null)
 		{
 			var conn = new SqlConnection(ConnStr);
 			conn.Open();
@@ -148,7 +155,7 @@ namespace SqlMigrator.Tests
 				{
 					conn.ChangeDatabase(database);
 				}
-				return new SqlCommand(sql, conn).ExecuteScalar();
+				return (T)new SqlCommand(sql, conn).ExecuteScalar();
 			}
 			finally
 			{
