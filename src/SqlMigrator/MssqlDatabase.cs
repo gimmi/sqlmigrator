@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SqlMigrator
@@ -33,7 +34,7 @@ namespace SqlMigrator
 			using (var conn = OpenConnectionAndChangeDb())
 			{
 				IDbCommand cmd = conn.CreateCommand();
-				cmd.CommandText = string.Format("SELECT COUNT(*) FROM Migrations WHERE Id = {0}", migration.Id);
+				cmd.CommandText = string.Concat("SELECT COUNT(*) FROM Migrations WHERE Id = ", migration.Id);
 				return (int)cmd.ExecuteScalar() < 1;
 			}
 		}
@@ -58,17 +59,17 @@ namespace SqlMigrator
 
 		public string BuildDeleteScript(Migration migration)
 		{
-			return string.Format("DELETE Migrations WHERE Id = {0}", migration.Id);
+			return BuildSqlScript("DELETE Migrations WHERE Id = ", migration.Id);
 		}
 
 		public string BuildInsertScript(Migration migration)
 		{
-			return string.Format("INSERT INTO Migrations(Id) VALUES({0})", migration.Id);
+			return BuildSqlScript("INSERT INTO Migrations(Id) VALUES(", migration.Id, ")");
 		}
 
 		public string BuildCreateScript()
 		{
-			return @"CREATE TABLE Migrations([Id] BIGINT PRIMARY KEY NOT NULL, [Date] DATETIME NOT NULL DEFAULT GETDATE(), [User] NVARCHAR(128) NOT NULL DEFAULT SUSER_NAME(), [Host] NVARCHAR(128) NOT NULL DEFAULT HOST_NAME())";
+			return BuildSqlScript(@"CREATE TABLE Migrations([Id] BIGINT PRIMARY KEY NOT NULL, [Date] DATETIME NOT NULL DEFAULT GETDATE(), [User] NVARCHAR(128) NOT NULL DEFAULT SUSER_NAME(), [Host] NVARCHAR(128) NOT NULL DEFAULT HOST_NAME())");
 		}
 
 		public void Execute(string batch)
@@ -101,6 +102,17 @@ namespace SqlMigrator
 				conn.ChangeDatabase(_databaseName);
 			}
 			return conn;
+		}
+
+		private string BuildSqlScript(params object[] parts)
+		{
+			var ret = new StringBuilder();
+			if (!string.IsNullOrWhiteSpace(_databaseName))
+			{
+				ret.AppendFormat("USE [{0}]", _databaseName).AppendLine()
+					.AppendLine("GO");
+			}
+			return ret.Append(string.Concat(parts)).ToString();
 		}
 
 		public string GetStatementDelimiter()

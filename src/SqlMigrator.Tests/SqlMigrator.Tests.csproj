@@ -67,6 +67,12 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="ChangeDbMigrations\001_change_db.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ChangeDbMigrations\002_create_table.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestMigrations\001_Create_table_Masters.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
