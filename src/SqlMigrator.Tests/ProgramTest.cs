@@ -117,11 +117,11 @@ namespace SqlMigrator.Tests
 			DropDatabaseIfExists("SqlMigratorTests");
 			CreateDatabase("SqlMigratorTests");
 
-			Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TestMigrations", "/migrationstablename", "OverriddenMigrations" }, TextWriter.Null);
+			Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TestMigrations", "/migrationstablename", "Overridden Migrations" }, TextWriter.Null);
 
 			TableExists("SqlMigratorTests", "Migrations").Should().Be.False();
-			TableExists("SqlMigratorTests", "OverriddenMigrations").Should().Be.True();
-			ExecuteScalar<int>("SELECT COUNT(*) FROM SqlMigratorTests.dbo.OverriddenMigrations").Should().Be.EqualTo(2);
+			TableExists("SqlMigratorTests", "Overridden Migrations").Should().Be.True();
+			ExecuteScalar<int>("SELECT COUNT(*) FROM SqlMigratorTests.dbo.[Overridden Migrations]").Should().Be.EqualTo(2);
 		}
 
 		private void CreateDatabase(string database)
