@@ -5,12 +5,13 @@ var utils = jsmake.Utils;
 var sys = jsmake.Sys;
 var dotnet = new jsmake.dotnet.DotNetUtils();
 
-var version;
+var versionObj, versionStr;
 
 task('default', 'test');
 
 task('version', function () {
-	version = JSON.parse(fs.readFile('version.json'));
+	versionObj = JSON.parse(fs.readFile('version.json'));
+	versionStr = [ versionObj.major, versionObj.minor, versionObj.patch ].join('.');
 });
 
 task('dependencies', function () {
@@ -27,26 +28,49 @@ task('assemblyinfo', 'version', function () {
 		AssemblyTrademark: '',
 		AssemblyCompany: 'Gian Marco Gherardi',
 		AssemblyConfiguration: '', // Probably a good place to put Git SHA1 and build date
-		AssemblyVersion: [ version.major, version.minor, version.patch, 0 ].join('.'),
-		AssemblyFileVersion: [ version.major, version.minor, version.patch, 0 ].join('.'),
-		AssemblyInformationalVersion: [ version.major, version.minor, version.patch ].join('.')
+		AssemblyVersion: [ versionStr, 0 ].join('.'),
+		AssemblyFileVersion: [ versionStr, 0 ].join('.'),
+		AssemblyInformationalVersion: versionStr
 	});
 });
 
 task('build', [ 'dependencies', 'assemblyinfo' ], function () {
-	dotnet.runMSBuild('src/SqlMigrator.sln', [ 'Clean', 'Rebuild' ]);
+	dotnet.runMSBuild('src/SqlMigrator.sln', [ 'Clean', 'Rebuild' ], { Configuration: 'Release' });
 });
 
 task('test', 'build', function () {
-	var testDlls = fs.createScanner('build/bin').include('**/*Tests.dll').scan();
+	var testDlls = fs.createScanner('src').include('*.Tests/bin/Debug/*.Tests.dll').scan();
 	dotnet.runNUnit(testDlls);
 });
 
 task('release', 'test', function () {
 	fs.deletePath('build');
-	dotnet.runMSBuild('src/SqlMigrator.sln', [ 'Clean', 'SqlMigrator:Rebuild' ], { Configuration: 'Release' });
-	fs.zipPath('build/bin', 'build/sqlmigrator-' + [ version.major, version.minor, version.patch ].join('.') + '.zip');
-	version.patch += 1;
-	fs.writeFile('version.json', JSON.stringify(version));
+	fs.createDirectory('build/tools')
+	fs.copyPath('src/SqlMigrator/bin/Release', 'build/tools');
+
+	fs.writeFile('build/Package.nuspec', [
+		'<?xml version="1.0"?>',
+		'<package >',
+		'  <metadata>',
+		'    <id>SqlMigrator</id>',
+		'    <version>' + versionStr + '</version>',
+		'    <authors>gimmi</authors>',
+		'    <owners>gimmi</owners>',
+		'    <licenseUrl>https://raw.github.com/gimmi/sqlmigrator/master/LICENSE</licenseUrl>',
+		'    <projectUrl>http://gimmi.github.com/sqlmigrator</projectUrl>',
+		'    <iconUrl>https://github.com/gimmi/sqlmigrator/raw/master/icon.png</iconUrl>',
+		'    <requireLicenseAcceptance>false</requireLicenseAcceptance>',
+		'    <description>Database change management tool for .NET</description>',
+		'    <copyright>Gian Marco Gherardi ' + new Date().getFullYear() + '</copyright>',
+		'    <tags>database sql migration migrations db agile change script tsql sqlserver refactoring tool commandline cli build</tags>',
+		'  </metadata>',
+		'</package>'
+	].join('\n'));
+
+	sys.run('tools/nuget/nuget.exe', 'pack', 'build/Package.nuspec');
+	sys.run('tools/nuget/nuget.exe', 'push', 'SqlMigrator.' + versionStr + '.nupkg');
+
+	versionObj.patch += 1;
+	fs.writeFile('version.json', JSON.stringify(versionObj));
 });
 
