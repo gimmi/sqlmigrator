@@ -16,7 +16,7 @@ namespace SqlMigrator
 			_log = log;
 		}
 
-		private StringBuilder CreateStringBuilder()
+		private Migration GetCreateMigrationsTableIfNotExists()
 		{
 			var ret = new StringBuilder();
 			if(!_database.MigrationsTableExists())
@@ -26,35 +26,63 @@ namespace SqlMigrator
 					.Append(_database.BuildCreateScript())
 					.AppendLine(_database.GetStatementDelimiter());
 			}
-			return ret;
+			return new Migration(-1,ret.ToString(),ret.ToString());
 		}
 
-		public string BuildUp(IEnumerable<Migration> migrations, int count)
+		public IEnumerable<Migration> EnumerateUp(IEnumerable<Migration> migrations, int count)
 		{
-			var ret = CreateStringBuilder();
-			foreach(Migration migration in migrations.OrderBy(m => m.Id).Take(count))
-			{
-				_log.WriteLine("Adding migration {0} to script", migration);
-				ret.AppendFormat("-- Migration {0}", migration).AppendLine()
-					.AppendLine(migration.Up)
-					.Append(_database.BuildInsertScript(migration))
-					.AppendLine(_database.GetStatementDelimiter());
-			}
-			return ret.ToString();
-		}
+            List<Migration> l = new List<Migration>(migrations);
+            // add the "fake" initial migration that creates the migrations table
+            l.Add(GetCreateMigrationsTableIfNotExists());
+            // add passed in migrations
+            l.AddRange(migrations.OrderBy(m => m.Id).Take(count));
+            return l;
+        }
 
-		public string BuildDown(IEnumerable<Migration> migrations, int count)
-		{
-			var ret = CreateStringBuilder();
-			foreach (Migration migration in migrations.OrderByDescending(m => m.Id).Take(count))
-			{
-				_log.WriteLine("Adding migration {0} to script", migration);
-				ret.AppendFormat("-- Migration {0}", migration).AppendLine()
-					.AppendLine(migration.Down)
-					.Append(_database.BuildDeleteScript(migration))
-					.AppendLine(_database.GetStatementDelimiter());
-			}
-			return ret.ToString();
-		}
-	}
+        public string BuildUp(IEnumerable<Migration> migrations, int count)
+        {
+            var migs = EnumerateUp(migrations, count);
+            return Build(migs, Direction.Up);
+        }
+
+
+
+        public IEnumerable<Migration> EnumerateDown(IEnumerable<Migration> migrations, int count)
+        {
+            List <Migration> l = new List<Migration>(migrations);
+            // add the "fake" initial migration that creates the migrations table
+            l.Add(GetCreateMigrationsTableIfNotExists());
+            // add passed in migrations
+            l.AddRange(migrations.OrderByDescending(m => m.Id).Take(count));
+            return l;
+        }
+
+        public string BuildDown(IEnumerable<Migration> migrations, int count)
+        {
+            var migs = EnumerateDown(migrations, count);
+            return Build(migs, Direction.Down);
+        }
+
+        public string GetSqlScript(Migration migration, Direction upDown)
+        {
+            StringBuilder sb = new StringBuilder(); 
+            return sb.AppendFormat("-- Migration {0}", migration)
+                    .AppendLine()
+                    .AppendLine((upDown==Direction.Up)? migration.Up : migration.Down)
+                    .Append((upDown == Direction.Up) ? _database.BuildInsertScript(migration) : _database.BuildDeleteScript(migration))
+                    .AppendLine(_database.GetStatementDelimiter())
+                    .ToString();
+        }
+
+
+        public string Build(IEnumerable<Migration> migrations, Direction upDown)
+        {
+            var sb = new StringBuilder();
+            foreach (Migration migration in migrations)
+            {
+                sb.Append(GetSqlScript(migration,upDown));
+            }
+            return sb.ToString();
+        }
+    }
 }

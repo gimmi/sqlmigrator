@@ -1,5 +1,11 @@
 namespace SqlMigrator
 {
+    public enum Direction
+    {
+        Up,
+        Down
+    }
+
 	public class Migration
 	{
 		private readonly long _id;

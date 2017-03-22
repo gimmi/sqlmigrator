@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -40,27 +41,30 @@ namespace SqlMigrator
 			var scriptBuilder = new ScriptBuilder(db, log);
 			var migrationFilter = new MigrationFilter(new MigrationRepository(opts.MigrationsDir, opts.TextEncoding, db), db);
 
-			string script;
+            IEnumerable<Migration> migrations;
+            Direction direction;
 			if(opts.Count >= 0)
 			{
 				log.WriteLine("Building Up script");
-				script = scriptBuilder.BuildUp(migrationFilter.GetPendingMigrations(), opts.Count);
+				migrations = scriptBuilder.EnumerateUp(migrationFilter.GetPendingMigrations(), opts.Count);
+                direction = Direction.Up;
 			}
 			else
 			{
 				log.WriteLine("Building Down script");
-				script = scriptBuilder.BuildDown(migrationFilter.GetApplyedMigrations(), -opts.Count);
+                migrations = scriptBuilder.EnumerateDown(migrationFilter.GetApplyedMigrations(), -opts.Count);
+                direction = Direction.Down;
 			}
 
 			if(string.IsNullOrWhiteSpace(opts.OutputFile))
 			{
 				log.WriteLine("Executing script to {0}", opts.ConnStr);
-				db.Execute(script);
+				db.Execute(migrations,direction);
 			}
 			else
 			{
 				log.WriteLine("Saving script to {0}", opts.OutputFile);
-				File.WriteAllText(opts.OutputFile, script, opts.TextEncoding);
+				File.WriteAllText(opts.OutputFile, scriptBuilder.Build(migrations,direction), opts.TextEncoding);
 			}
 		}
 	}

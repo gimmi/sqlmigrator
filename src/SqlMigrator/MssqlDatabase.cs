@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,8 +15,9 @@ namespace SqlMigrator
 		private readonly string _databaseName;
 		private readonly int _commandTimeout;
 		private readonly string _migrationsTableName;
+        private readonly TextWriter _log;
 
-		public MssqlDatabase(string connstr, string databaseName, int commandTimeout, string migrationsTableName)
+        public MssqlDatabase(string connstr, string databaseName, int commandTimeout, string migrationsTableName)
 		{
 			_connstr = connstr;
 			_databaseName = databaseName;
@@ -23,7 +25,13 @@ namespace SqlMigrator
 			_migrationsTableName = migrationsTableName;
 		}
 
-		public bool MigrationsTableExists()
+        public MssqlDatabase(string connstr, string databaseName, int commandTimeout, string migrationsTableName, TextWriter log) : this(connstr, databaseName, commandTimeout, migrationsTableName)
+        {
+            _log = log;
+        }
+
+
+        public bool MigrationsTableExists()
 		{
 			using (var conn = OpenConnectionAndChangeDb())
 			{
@@ -76,26 +84,71 @@ namespace SqlMigrator
 
 		public void Execute(string batch)
 		{
-			using(var conn = OpenConnectionAndChangeDb())
-			{
-				SqlTransaction tran = conn.BeginTransaction();
-				try
-				{
-					foreach(string script in Regex.Split(batch, @"^\s*GO\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline).Where(s => !string.IsNullOrWhiteSpace(s)))
-					{
-						new SqlCommand(script, conn, tran) { CommandTimeout = _commandTimeout }.ExecuteNonQuery();
-					}
-					tran.Commit();
-				}
-				catch
-				{
-					tran.Rollback();
-					throw;
-				}
-			}
-		}
+            Execute(Regex.Split(
+                    batch, 
+                    @"^\s*GO\s*$", 
+                    RegexOptions.IgnoreCase | RegexOptions.Multiline
+                ).Where(s => !string.IsNullOrWhiteSpace(s))
+            );
+        }
 
-		private SqlConnection OpenConnectionAndChangeDb()
+        public void Execute(IEnumerable<string> batch)
+        {
+            using (var conn = OpenConnectionAndChangeDb())
+            {
+                SqlTransaction tran = conn.BeginTransaction();
+                try
+                {
+                    foreach (string script in batch)
+                    {
+                        new SqlCommand(script, conn, tran) { CommandTimeout = _commandTimeout }.ExecuteNonQuery();
+                    }
+                    tran.Commit();
+                }
+                catch
+                {
+                    tran.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        public void Execute(Migration migration, Direction upDown)
+        {
+            List<Migration> migrations = new List<Migration>();
+            migrations.Add(migration);
+            Execute(migrations, upDown);
+        }
+
+        public void Execute(IEnumerable<Migration> migrations, Direction upDown)
+        {
+            using (var conn = OpenConnectionAndChangeDb())
+            {
+                SqlTransaction tran = conn.BeginTransaction();
+                try
+                {
+                    foreach (Migration migration in migrations)
+                    {
+                        if(_log != null)
+                        {
+                            _log.WriteLine("Executing migration {0}", migration);
+                        }
+                        string script = (upDown == Direction.Up) ? migration.Up : migration.Down;
+                        {
+                            new SqlCommand(script, conn, tran) { CommandTimeout = _commandTimeout }.ExecuteNonQuery();
+                        }
+                    }
+                    tran.Commit();
+                }
+                catch
+                {
+                    tran.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        private SqlConnection OpenConnectionAndChangeDb()
 		{
 			var conn = new SqlConnection(_connstr);
 			conn.Open();
