@@ -49,7 +49,7 @@ namespace SqlMigrator
             }
             catch (Exception)
             {
-                log.WriteLine("No Assembly Info available");
+                log.WriteLine("WARNING: No Assembly Info available");
             }
 
             var commandLineParser = new CommandLineParser<Options>();

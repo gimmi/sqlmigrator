@@ -66,13 +66,12 @@ namespace SqlMigrator
         public string GetSqlScript(Migration migration, Direction upDown)
         {
             StringBuilder sb = new StringBuilder();
-            return sb.AppendFormat("-- Migration {0}", migration)
-            .AppendLine()
-            .AppendLine((upDown == Direction.Up) ? migration.Up : migration.Down)
-            .Append((upDown == Direction.Up) ? _database.BuildInsertScript(migration) : _database.BuildDeleteScript(migration))
-            .AppendLine(_database.GetStatementDelimiter())
-            .ToString();
-        }
+            sb.AppendFormat("-- Migration {0}", migration).AppendLine();
+            sb.AppendLine((upDown == Direction.Up) ? migration.Up : migration.Down);
+            if (migration.Id >= 0) // filters out the "fake migration" with Id (-1)
+                sb.Append((upDown == Direction.Up) ? _database.BuildInsertScript(migration) : _database.BuildDeleteScript(migration));
+            sb.AppendLine(_database.GetStatementDelimiter());
+            return sb.ToString();        }
 
 
         public string Build(IEnumerable<Migration> migrations, Direction upDown)
