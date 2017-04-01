@@ -10,7 +10,10 @@ namespace SqlMigrator
 		string BuildInsertScript(Migration migration);
 		string BuildCreateScript();
 		void Execute(string batch);
-		bool MigrationsTableExists();
+        void Execute(IEnumerable<string> batch);
+        void Execute(Migration migration, Direction upDown);
+        void Execute(IEnumerable<Migration> migrations, Direction upDown);
+        bool MigrationsTableExists();
 		string GetStatementDelimiter();
 	}
 }
