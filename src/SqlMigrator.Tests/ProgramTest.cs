@@ -9,16 +9,13 @@ namespace SqlMigrator.Tests
 	[TestFixture]
 	public class ProgramTest
 	{
-		/*
+        /*
 		 * Uses SQL server LocalDB
-		 * Database file is located at: C:\Users\<user>\AppData\Local\Microsoft\Microsoft SQL Server Local DB\Instances\v11.0
-		 * see http://msdn.microsoft.com/en-us/library/hh510202.aspx
+		 * Database file is located at: C:\Users\<user>\AppData\Local\Microsoft\Microsoft SQL Server Local DB\Instances\MSSQLLocalDB
 		 * 
-		 * For VS2010 you need to install:
-		 * SQL Server 2012 express LocalDB
-		 * http://support.microsoft.com/kb/2544514
+		 * This DB engine should come installed with VS2015
 		 */
-		private const string ConnStr = @"Server=(localdb)\v11.0;Integrated Security=true";
+        private const string ConnStr = @"Server=(localdb)\MSSQLLocalDB;Integrated Security=true";
 
 		[Test]
 		public void Functional_test()
@@ -89,7 +86,7 @@ namespace SqlMigrator.Tests
 			CreateDatabase("SqlMigratorTests");
 
 			Executing.This(() => Program.Run(new[] { "/connstr", ConnStr, "/dbname", "SqlMigratorTests", "/migrationsdir", @".\TimeoutMigration", "/timeout", "2" }, TextWriter.Null))
-				.Should().Throw<SqlException>().And.Exception.Message.Should().Contain("Timeout expired.");
+				.Should().Throw<SqlException>().And.Exception.Message.Should().Contain("Timeout Expired.");
 		}
 
 		[Test]

@@ -39,7 +39,7 @@ task('build', [ 'dependencies', 'assemblyinfo' ], function () {
 });
 
 task('test', 'build', function () {
-	var testDlls = fs.createScanner('src').include('*.Tests/bin/Debug/*.Tests.dll').scan();
+	var testDlls = fs.createScanner('src').include('*.Tests/bin/Release/*.Tests.dll').scan();
 	dotnet.runNUnit(testDlls);
 });
 

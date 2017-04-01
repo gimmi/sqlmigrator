@@ -7,6 +7,7 @@
 /src/*/bin/
 /src/*.user
 /src/*.suo
+/src/.vs/
 /src/SharedAssemblyInfo.cs
 /TestResult.xml
 /src/SampleWebApplication/extjs/
